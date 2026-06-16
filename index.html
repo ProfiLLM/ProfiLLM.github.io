@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch</title>
+<meta name="description" content="ProfiLLM: utility-aligned agentic user profiling deployed on DiDi's production ride-hailing dispatcher (VLDB 2027, Scalable Data Science track). Project page with the full appendix, extended experiments, and code.">
+<link rel="canonical" href="https://profillm.github.io/">
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch">
+<meta property="og:description" content="VLDB 2027 (Scalable Data Science). Deployed at DiDi. Full appendix, extended experiments, and code.">
+<meta property="og:image" content="https://profillm.github.io/static/images/framework.png">
+<meta property="og:url" content="https://profillm.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
+<style>
+  :root{
+    /* color — warm academic paper, single burgundy accent */
+    --ink:#211d1e; --muted:#6e6866; --muted-2:#5f5957; --faint:#aaa39d; --faint-txt:#867f7a;
+    --line:#ece7e1; --line2:#e3dcd5; --bg:#fffdfb; --soft:#faf6f1; --card:#ffffff;
+    --accent:#8a3a45; --accent-dark:#6c2d37; --accent-2:#b4654f; --tint:#f6edee; --neg:#70767f;
+    --grad:linear-gradient(90deg,#8a3a45 0%,#b4654f 100%);
+    /* type */
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    /* layout + rhythm */
+    --maxw:1020px; --measure:none; --gutter:24px;
+    --s1:6px; --s2:10px; --s3:16px; --s4:24px; --s5:38px; --s6:60px;
+    --r:12px; --r-sm:7px; --t:.16s ease;
+    --sh-sm:0 1px 2px rgba(46,32,34,.05),0 2px 8px rgba(46,32,34,.04);
+    --sh-md:0 2px 6px rgba(46,32,34,.06),0 14px 40px rgba(46,32,34,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.72;font-size:16.5px;
+       -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;
+       font-variant-numeric:lining-nums}
+  body::before{content:"";position:fixed;top:0;left:0;right:0;height:3px;background:var(--grad);z-index:120}
+  a{color:var(--accent);text-decoration:none;text-underline-offset:.18em;text-decoration-thickness:1px}
+  a:hover{color:var(--accent-dark);text-decoration:underline;text-decoration-color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent-dark);outline-offset:2px;border-radius:var(--r-sm)}
+  ::selection{background:var(--tint)}
+  @media(prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto !important}}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter)}
+  .katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+  /* ---------- sticky nav ---------- */
+  .topnav{position:sticky;top:0;z-index:50;background:rgba(255,253,251,.86);
+          -webkit-backdrop-filter:saturate(1.15) blur(12px);backdrop-filter:saturate(1.15) blur(12px);border-bottom:1px solid var(--line)}
+  .navwrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:14px}
+  .brand{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink);letter-spacing:.01em}
+  .brand:hover{text-decoration:none;color:var(--accent-dark)}
+  .navlinks{display:flex;gap:22px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .navlinks a{font-size:13.5px;color:var(--muted);white-space:nowrap;padding:6px 0;border-bottom:1.5px solid transparent;letter-spacing:.015em;transition:color var(--t),border-color var(--t)}
+  .navlinks a:hover{color:var(--ink);text-decoration:none}
+  .navlinks a.active,.navlinks a.active:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  /* ---------- hero ---------- */
+  header{background:linear-gradient(180deg,var(--soft) 0%,var(--bg) 92%);border-bottom:1px solid var(--line);
+         padding:72px 0 var(--s6);scroll-margin-top:62px}
+  header .wrap{text-align:center}
+  header .wrap p{max-width:none;margin-left:auto;margin-right:auto}
+  .venue{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:650;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--accent);background:#fff;border:1px solid #e7d3d6;border-radius:999px;padding:7px 16px;margin-bottom:26px;box-shadow:var(--sh-sm)}
+  h1{font-family:var(--serif);font-optical-sizing:auto;font-size:40px;line-height:1.22;margin:0 auto 26px;font-weight:600;
+     letter-spacing:-.012em;text-wrap:balance;max-width:920px}
+  .authors{font-size:17.5px;margin:0 0 var(--s3);line-height:1.9;letter-spacing:-.003em}
+  .authors a{color:var(--ink);font-weight:600}
+  .authors a:hover{color:var(--accent-dark);text-decoration:none}
+  .authors sup,.affil sup,.notes sup{color:var(--accent);font-weight:600;font-size:.68em}
+  .affil{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0 0 var(--s2)}
+  .notes{color:var(--faint-txt);font-size:13px;line-height:1.6;margin:var(--s2) 0 0}
+  /* ---------- buttons ---------- */
+  .btns{display:flex;flex-wrap:wrap;justify-content:center;gap:11px;margin-top:34px}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);border-radius:999px;
+       padding:10px 19px;font-size:14px;font-weight:600;border:1px solid var(--line2);box-shadow:var(--sh-sm);
+       transition:border-color var(--t),color var(--t),background var(--t),transform var(--t);cursor:pointer}
+  .btn:hover{border-color:var(--accent);color:var(--accent-dark);text-decoration:none;transform:translateY(-1px)}
+  .btn .ic{display:inline-flex;width:15px;height:15px;color:var(--faint-txt);transition:color var(--t)}
+  .btn .ic svg{width:100%;height:100%}
+  .btn:hover .ic{color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary .ic{color:rgba(255,255,255,.75)}
+  .btn.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;text-decoration:none}
+  .btn.primary:hover .ic{color:#fff}
+  .btn.soon{color:var(--faint-txt);border-color:var(--line);cursor:not-allowed;pointer-events:none;box-shadow:none}
+  /* ---------- hero teaser ---------- */
+  .teaser{margin:46px auto 0;max-width:980px;background:var(--card);border:1px solid var(--line2);border-radius:var(--r);
+          padding:16px 16px 12px;box-shadow:var(--sh-md);text-align:center}
+  .teaser img{max-width:100%;height:auto;border-radius:6px}
+  .teaser figcaption{color:var(--muted);font-size:13.5px;margin:10px auto 2px;max-width:74ch;line-height:1.55;text-wrap:pretty}
+  /* ---------- sections + headings ---------- */
+  section{padding:var(--s6) 0;border-bottom:1px solid var(--line);scroll-margin-top:62px}
+  h2{font-family:var(--serif);font-size:26px;font-weight:600;margin:0 0 26px;letter-spacing:-.008em;line-height:1.3;
+     display:flex;align-items:baseline;gap:12px;position:relative}
+  h2:has(.bar){flex-direction:column;gap:0;padding-top:16px}
+  h2 .bar{position:absolute;top:0;left:0;display:block;width:38px;height:3.5px;background:var(--grad);border-radius:3px}
+  .subh{font-family:var(--serif);font-size:17.5px;font-weight:600;color:var(--ink);letter-spacing:-.005em;line-height:1.4;margin:var(--s5) 0 var(--s2);scroll-margin-top:62px}
+  p{margin:0 0 var(--s3);max-width:var(--measure)}
+  .lede{color:var(--muted);font-size:15px;line-height:1.68;max-width:72ch;margin:calc(-1 * var(--s2)) 0 var(--s4)}
+  figure{margin:var(--s4) 0 var(--s2);text-align:center}
+  figure img{max-width:100%;height:auto;border:1px solid var(--line2);border-radius:10px;background:#fff;box-shadow:var(--sh-sm)}
+  img.zoom{cursor:zoom-in;transition:border-color var(--t),box-shadow var(--t)}
+  figure img.zoom:hover{border-color:var(--accent);box-shadow:var(--sh-md)}
+  figcaption{color:var(--muted);font-size:13.5px;margin:12px auto 0;max-width:64ch;text-align:center;line-height:1.55;text-wrap:pretty}
+  .pdflink{color:var(--accent);font-weight:500;white-space:nowrap}
+  .abstract{font-family:var(--serif);font-size:17.5px;line-height:1.78;color:#33302f;max-width:76ch}
+  .cards{display:grid;gap:var(--s4)}
+  /* ---------- appendix directory ---------- */
+  .revbox{background:var(--soft)}
+  .revgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(218px,1fr));gap:12px;margin:var(--s3) 0 var(--s1)}
+  .revgrid a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line2);border-radius:var(--r);
+             padding:13px 15px;font-size:13.5px;font-weight:500;color:var(--ink);box-shadow:var(--sh-sm);
+             transition:border-color var(--t),color var(--t),transform var(--t),box-shadow var(--t)}
+  .revgrid a:hover{color:var(--accent-dark);text-decoration:none;border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--sh-md)}
+  .revgrid a .tag{flex:none}
+  .revfoot{font-size:13.5px;color:var(--muted);margin-top:var(--s4)}
+  /* ---------- highlights: metric tiles + contributions ---------- */
+  .statgroups{margin:var(--s4) 0 var(--s2)}
+  .statgroup{padding:var(--s3) 0}
+  .sglabel{font-size:11px;font-weight:650;letter-spacing:.12em;text-transform:uppercase;color:var(--faint-txt);margin-bottom:12px}
+  .sgrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .metric{display:block;background:var(--card);border:1px solid var(--line2);border-radius:var(--r);padding:18px 20px 16px;
+          box-shadow:var(--sh-sm);color:inherit;transition:border-color var(--t),transform var(--t),box-shadow var(--t)}
+  a.metric:hover{text-decoration:none;border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--sh-md)}
+  a.metric:hover .l{color:var(--accent)}
+  .metric .v{font-family:var(--serif);font-size:31px;font-weight:600;color:var(--accent-dark);letter-spacing:-.02em;
+             font-variant-numeric:tabular-nums;line-height:1.1}
+  .metric .l{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.45;transition:color var(--t)}
+  .contrib{list-style:none;padding:0;margin:var(--s5) 0 0;display:grid;grid-template-columns:1fr 1fr;gap:18px 42px}
+  .contrib li{font-size:14.5px;color:var(--muted);padding-left:18px;position:relative;line-height:1.6}
+  .contrib li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--grad)}
+  .contrib li b{color:var(--ink);font-weight:650}
+  /* ---------- tables ---------- */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:var(--s4) 0;background:var(--card);
+      border:1px solid var(--line2);border-radius:var(--r);box-shadow:var(--sh-sm);padding:4px 14px 10px}
+  table.dt{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+  table.dt th,table.dt td{padding:8.5px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+  table.dt tbody tr:last-child td{border-bottom:none}
+  table.dt th:first-child,table.dt td:first-child{text-align:left;position:sticky;left:0;background:var(--card);box-shadow:1px 0 0 var(--line2)}
+  table.dt thead th{font-weight:600;text-align:center;color:var(--muted-2);border-bottom:1.5px solid var(--line2);font-size:12.5px;letter-spacing:.02em}
+  table.dt thead th:first-child{text-align:left}
+  table.dt tbody tr:hover td{background:var(--soft)}
+  table.dt tbody tr:hover td:first-child{background:var(--soft)}
+  table.dt tr.ours td{background:var(--tint)}
+  table.dt tr.ours td:first-child{background:var(--tint);font-weight:600}
+  table.dt td.best{font-weight:700;color:var(--accent)}
+  table.dt td.neg{color:var(--neg)}
+  table.dt tr.grp td{background:var(--soft);font-weight:600;text-align:left;color:var(--muted-2);text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+  table.dt caption{caption-side:bottom;color:var(--muted-2);font-size:12.5px;padding:var(--s2) 2px 6px;text-align:left;line-height:1.5}
+  /* claim->evidence */
+  table.claim{border-collapse:collapse;width:100%;font-size:14.5px}
+  table.claim th,table.claim td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.claim thead th{color:var(--muted-2);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+  table.claim td.n{font-weight:700;color:var(--accent-dark);white-space:nowrap;font-variant-numeric:tabular-nums;font-family:var(--serif);font-size:15.5px}
+  /* ---------- code / notes ---------- */
+  pre{background:var(--soft);color:var(--ink);border:1px solid var(--line2);border-radius:var(--r);padding:20px 22px;overflow:auto;font-size:13px;
+      font-family:var(--mono);line-height:1.62;position:relative;box-shadow:var(--sh-sm)}
+  .copy{position:absolute;top:12px;right:12px;background:#fff;color:var(--muted);border:1px solid var(--line2);
+        border-radius:999px;padding:5px 13px;font-size:12px;cursor:pointer;transition:border-color var(--t),color var(--t)}
+  .copy:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .note{background:var(--soft);border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:var(--r);
+        padding:16px 18px;font-size:14px;color:var(--muted-2);max-width:var(--measure)}
+  footer{padding:44px 0 60px;color:var(--faint-txt);font-size:13px;text-align:center;line-height:1.8}
+  footer .fmark{font-family:var(--serif);font-size:15px;color:var(--muted);display:block;margin-bottom:6px}
+  /* ---------- lightbox + back-to-top ---------- */
+  .lb{display:none;position:fixed;inset:0;background:rgba(24,18,19,.93);z-index:999;cursor:zoom-out;padding:24px}
+  .lb.on{display:flex;align-items:center;justify-content:center}
+  .lb img{max-width:96vw;max-height:92vh;width:auto;height:auto;border-radius:var(--r-sm);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+  #toTop{position:fixed;right:22px;bottom:22px;z-index:60;width:42px;height:42px;display:none;align-items:center;
+         justify-content:center;border-radius:50%;background:#fff;color:var(--accent);font-size:19px;border:1px solid var(--line2);cursor:pointer;
+         box-shadow:var(--sh-md);transition:border-color var(--t),color var(--t),transform var(--t)}
+  #toTop:hover{border-color:var(--accent);color:var(--accent-dark);transform:translateY(-2px)}
+  #toTop.show{display:flex}
+
+  /* ---------- method layer cards ---------- */
+  .layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(262px,1fr));gap:16px;margin:var(--s4) 0}
+  .layer{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);padding:20px 22px 18px;box-shadow:var(--sh-sm);position:relative}
+  .layer .num{position:absolute;top:12px;right:18px;font-family:var(--serif);font-size:30px;color:var(--line2);font-weight:600;line-height:1}
+  .layer .lk{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:3px 11px;margin-bottom:11px}
+  .lk.off{color:var(--muted-2);background:var(--soft);border:1px solid var(--line2)}
+  .lk.on{color:#fff;background:var(--accent);border:1px solid var(--accent)}
+  .layer h3{font-family:var(--serif);font-size:16.5px;font-weight:600;margin:0 0 8px;letter-spacing:-.005em}
+  .layer p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.66}
+  /* ---------- uniform experiment figure row ---------- */
+  .figrow figure{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);box-shadow:var(--sh-sm);padding:14px 14px 12px;margin:0}
+  .figrow figure img{height:225px;width:100%;object-fit:contain;border:none;box-shadow:none;border-radius:0}
+  .figrow figcaption{margin-top:10px;font-size:13px}
+  /* ---------- result table column groups ---------- */
+  #t1 tbody td:nth-child(2),#t1 tbody td:nth-child(4),#t1 tbody td:nth-child(6),
+  #t1 thead tr:last-child th:nth-child(1),#t1 thead tr:last-child th:nth-child(3),#t1 thead tr:last-child th:nth-child(5),
+  #t1 thead tr:first-child th:nth-child(2),#t1 thead tr:first-child th:nth-child(3),#t1 thead tr:first-child th:nth-child(4),
+  #t2 tbody td:nth-child(2),#t2 tbody td:nth-child(6),#t2 tbody td:nth-child(10),
+  #t2 thead tr:last-child th:nth-child(1),#t2 thead tr:last-child th:nth-child(5),#t2 thead tr:last-child th:nth-child(9),
+  #t2 thead tr:first-child th:nth-child(2),#t2 thead tr:first-child th:nth-child(3),#t2 thead tr:first-child th:nth-child(4){border-left:1px solid var(--line2)}
+  table.dt thead tr:first-child th{padding-bottom:4px}
+  /* ---------- shared chips ---------- */
+  .tag{display:inline-block;min-width:21px;text-align:center;font-weight:650;color:var(--accent);background:var(--tint);
+       border-radius:6px;font-size:11.5px;padding:2.5px 7px;letter-spacing:.01em}
+  .permalink{color:var(--faint-txt);font-weight:400;text-decoration:none;font-size:14px}
+  .permalink:hover{color:var(--accent)}
+  .promptcard{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);padding:15px 18px;margin:12px 0;font-size:14px;box-shadow:var(--sh-sm)}
+  .promptcard h4{margin:0 0 7px;font-size:14px;color:var(--ink);font-family:var(--serif);font-size:15px}
+  .promptcard code{background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:12.5px;font-family:var(--mono)}
+  .find{font-size:15px;line-height:1.7;max-width:var(--measure)}
+  @media(max-width:860px){:root{--gutter:30px}h1{font-size:32px}}
+  @media(max-width:600px){:root{--gutter:20px}body{font-size:16px}.brand{display:none}.metric .v{font-size:25px}
+    h1{font-size:27px}header{padding:50px 0 var(--s5)}section{padding:var(--s5) 0}.contrib{grid-template-columns:1fr;gap:var(--s3) 0}
+    .revgrid{grid-template-columns:1fr 1fr}.teaser{padding:10px}}
+  @media print{.topnav,#toTop,.lb,body::before{display:none}a{color:#000}pre{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+
+<!-- ======================= STICKY NAV ======================= -->
+<nav class="topnav" aria-label="Section navigation">
+  <div class="wrap navwrap">
+    <a class="brand" href="#top">ProfiLLM</a>
+    <div class="navlinks">
+      <a href="#abstract">Abstract</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#explore">Appendix</a>
+      <a href="#bibtex">BibTeX</a>
+      <a href="#code">Code</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ======================= HERO ======================= -->
+<header id="top">
+  <div class="wrap">
+    <h1>ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch</h1>
+    <p class="authors">
+      <a href="mailto:tlyu077@connect.hkust-gz.edu.cn">Tengfei Lyu</a><sup>1,*</sup>,
+      <a href="mailto:zyuan779@connect.hkust-gz.edu.cn">Zirui Yuan</a><sup>1,*</sup>,
+      <a href="mailto:leoliuxu@didiglobal.com">Xu Liu</a><sup>2</sup>,
+      <a href="mailto:peterwan@didiglobal.com">Kai Wan</a><sup>2</sup>,
+      <a href="mailto:luzihao@didiglobal.com">Zihao Lu</a><sup>2</sup>,
+      <a href="mailto:malimarey@didiglobal.com">Li Ma</a><sup>2</sup>,
+      <a href="mailto:liuh@ust.hk">Hao Liu</a><sup>1,&dagger;</sup>
+    </p>
+    <p class="affil"><sup>1</sup>The Hong Kong University of Science and Technology (Guangzhou) &nbsp;&middot;&nbsp; <sup>2</sup>DiDi Chuxing</p>
+    <p class="notes"><sup>*</sup>Equal contribution, during an internship at DiDi Chuxing. &nbsp;&middot;&nbsp; <sup>&dagger;</sup>Corresponding author</p>
+
+    <div class="btns">
+      <a class="btn primary" href="files/ProfiLLM_paper.pdf" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Paper (PDF)</a>
+      <a class="btn" href="appendix.html"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> Appendix (HTML)</a>
+      <a class="btn" href="files/ProfiLLM_appendix.pdf" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span> Appendix (PDF)</a>
+      <a class="btn" href="https://github.com/ProfiLLM/ProfiLLM" target="_blank" rel="noopener"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 2.87-.39c.97 0 1.95.13 2.87.39 2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.67.8.55A10.51 10.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg></span> Code</a>
+      <a class="btn" href="#bibtex"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10M7 12h10M7 16h6"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg></span> BibTeX</a>
+    </div>
+
+    <figure class="teaser">
+      <img class="zoom" loading="eager" decoding="async" src="static/images/framework.png" alt="Three-panel ProfiLLM framework: (a) tool-augmented global knowledge mining and (b) utility-aligned profile exploration run offline; (c) cached-embedding online serving path." style="border:none;box-shadow:none">
+      <figcaption><b>ProfiLLM overview.</b> (a)&nbsp;Tool-Augmented Global Knowledge Mining and (b)&nbsp;Utility-Aligned Profile Exploration run offline; (c)&nbsp;the online serving path performs only a cluster-rule lookup and a cached embedding fetch &mdash; zero online LLM inference. <a class="pdflink" href="static/pdfs/figs/framework.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption>
+    </figure>
+  </div>
+</header>
+
+<!-- ======================= ABSTRACT ======================= -->
+<section id="abstract">
+  <div class="wrap">
+    <h2><span class="bar"></span>Abstract</h2>
+    <p class="abstract">Bringing Large Language Models (LLMs) into industrial ride-hailing dispatch as semantic feature extractors over platform-scale behavioral logs is a compelling but under-explored data systems problem. Production matching pipelines remain dominated by structured numerical features, yet decisive behavioral signals (e.g., a driver's habitual aversion to certain regions) are inherently contextual and naturally expressible as LLM-generated user profiles. However, scaling such profiling to a live, millisecond-latency dispatcher faces three intertwined constraints rarely addressed together: logs exceed any LLM's context window by orders of magnitude; most users are long-tail; and surface-fluent profiles do not necessarily improve downstream prediction utility.</p>
+    <p class="abstract">We present <b>ProfiLLM</b>, an agentic LLM data pipeline with two modules. <b>(1) Tool-Augmented Global Knowledge Mining</b> equips an LLM agent with 27 analytical tools to mine platform-scale data, producing reusable global knowledge, adaptive clustering rules, and regional supply&ndash;demand priors. <b>(2) Utility-Aligned Profile Exploration</b> generates candidate profiles per cluster, evaluates them via a lightweight downstream-utility proxy, iteratively refines the best, and constructs preference pairs for DPO fine-tuning. A strict offline&ndash;online contract keeps all LLM reasoning offline; online serving reduces to a cached cluster-embedding lookup with sub-millisecond overhead and zero online LLM inference. Deployed on DiDi's production dispatcher, ProfiLLM achieves up to <b>+6.14%</b> AUC, up to <b>+4.35%</b> simulation GMV, and a 14-day A/B with <b>+0.47%</b> GMV, <b>+0.33%</b> CR, and <b>&minus;0.82%</b> Cancel-Before-Accept.</p>
+  </div>
+</section>
+
+<!-- ======================= HIGHLIGHTS ======================= -->
+<section id="highlights">
+  <div class="wrap">
+    <h2><span class="bar"></span>Highlights</h2>
+    <p class="lede">Behavioral signals that structured features miss are decisive for dispatch, yet an LLM cannot run inside a 2-second matching loop. ProfiLLM mines logs with an agentic toolkit, DPO-aligns cluster profiles to a downstream-utility proxy, and keeps all LLM reasoning offline &mdash; so the online path is a cached lookup that lifts prediction and matching quality at sub-millisecond cost.</p>
+
+    <div class="statgroups">
+      <div class="statgroup">
+        <div class="sglabel">Prediction quality &middot; offline</div>
+        <div class="sgrow">
+          <a class="metric" href="#results"><div class="v">+6.14%</div><div class="l">Outcome-prediction AUC</div></a>
+          <a class="metric" href="#results"><div class="v">+4.35%</div><div class="l">GMV in dispatching simulation</div></a>
+        </div>
+      </div>
+      <div class="statgroup">
+        <div class="sglabel">Live 14-day A/B &middot; DiDi production</div>
+        <div class="sgrow">
+          <a class="metric" href="appendix.html#extended-ab"><div class="v">+0.47%</div><div class="l">GMV</div></a>
+          <a class="metric" href="appendix.html#extended-ab"><div class="v">&minus;0.82%</div><div class="l">Cancel-Before-Accept</div></a>
+        </div>
+      </div>
+      <div class="statgroup">
+        <div class="sglabel">Serving cost</div>
+        <div class="sgrow">
+          <a class="metric" href="appendix.html#complexity"><div class="v">&lt;0.01 ms</div><div class="l">Added latency / OD pair</div></a>
+          <a class="metric" href="appendix.html#offline-cost"><div class="v">10.6&times;</div><div class="l">Cheaper offline refresh</div></a>
+        </div>
+      </div>
+    </div>
+
+    <ul class="contrib">
+      <li><b>First deployed LLM profiler</b> for a production ride-hailing dispatcher (2-s cycle, ~200&nbsp;ms budget).</li>
+      <li><b>Agentic knowledge mining</b> &mdash; an LLM agent chains <a href="appendix.html#tools">27 tools</a> under Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize.</li>
+      <li><b>Utility-aligned profiles</b> &mdash; selected and <a href="appendix.html#dpo-vs-exploration">DPO-aligned</a> to a downstream-utility proxy.</li>
+      <li><b>Strict offline&ndash;online contract</b> &mdash; batch-offline reasoning; serving is a cached lookup with zero online LLM inference.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================= METHOD ======================= -->
+<section id="method">
+  <div class="wrap">
+    <h2><span class="bar"></span>Method Overview</h2>
+    <p class="lede">ProfiLLM materializes a strict offline&ndash;online decoupling as a three-layer pipeline (see the overview figure above): all LLM reasoning runs in offline batch jobs, and the latency-critical dispatcher consumes only pre-computed artifacts.</p>
+    <div class="layers">
+      <div class="layer"><span class="num">1</span><span class="lk off">Offline</span>
+        <h3>Tool-Augmented Knowledge Mining</h3>
+        <p>An LLM agent equipped with 27 analytical tools mines platform-scale logs under an Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize paradigm, producing global knowledge \(\mathcal{K}\), an interpretable clustering rule set \(\mathcal{A}\), and regional supply&ndash;demand priors \(\mathcal{R}\).</p>
+      </div>
+      <div class="layer"><span class="num">2</span><span class="lk off">Offline</span>
+        <h3>Utility-Aligned Profile Exploration</h3>
+        <p>For each cluster, candidate profiles are generated, scored by a lightweight LOGIC-rule utility proxy, iteratively refined on prediction-error feedback, and distilled via DPO into a single-pass generator; each profile is encoded once into a \(d\)-dimensional embedding.</p>
+      </div>
+      <div class="layer"><span class="num">3</span><span class="lk on">Online</span>
+        <h3>Outcome Prediction &amp; Matching</h3>
+        <p>Per OD pair, serving performs only a deterministic cluster-rule lookup and a cached embedding fetch, concatenated with structured features for the production multi-task predictor. Zero online LLM inference; under 0.01&nbsp;ms added per pair.</p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:6px">The only artifacts crossing the offline&ndash;online boundary are the rule set \(\mathcal{A}\) and the cluster-embedding table \(\{\mathbf{e}_a\}\) &mdash; the structural reason ProfiLLM fits within DiDi's 200&nbsp;ms dispatch budget without modifying the matching stack.</p>
+  </div>
+</section>
+
+<!-- ======================= RESULTS ======================= -->
+<section id="results">
+  <div class="wrap">
+    <h2><span class="bar"></span>Key Results</h2>
+    <p>ProfiLLM consistently outperforms traditional and naive-LLM baselines across three cities. Below are the full result tables (transcribed for on-page reading) and the headline figures. <span style="color:var(--muted)">Bold burgundy&nbsp;=&nbsp;per-column best; tinted rows are our methods; gray&nbsp;=&nbsp;negative.</span></p>
+
+    <h3 class="subh">Table 1 &mdash; Dispatching simulation: relative improvement (%) over pickup-distance KM (Overall)</h3>
+    <div class="tw"><table class="dt" id="t1">
+      <thead>
+        <tr><th rowspan="2">Method</th><th colspan="2">City A</th><th colspan="2">City B</th><th colspan="2">City C</th></tr>
+        <tr><th>GMV</th><th>CR</th><th>GMV</th><th>CR</th><th>GMV</th><th>CR</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>TVal</td><td>+2.24</td><td>+2.14</td><td>+1.87</td><td>+1.63</td><td>+2.56</td><td>+2.48</td></tr>
+        <tr><td>GRC</td><td>+0.73</td><td class="neg">&minus;3.42</td><td>+1.15</td><td class="neg">&minus;2.18</td><td>+0.41</td><td class="neg">&minus;1.87</td></tr>
+        <tr><td>Llama-3.3-70B</td><td>+2.34</td><td>+2.76</td><td>+1.92</td><td>+2.31</td><td>+2.68</td><td>+3.12</td></tr>
+        <tr><td>Qwen3-Next-80B</td><td>+2.41</td><td>+2.54</td><td>+2.08</td><td>+2.12</td><td>+2.75</td><td>+2.89</td></tr>
+        <tr><td>DeepSeek-R1</td><td>+2.53</td><td>+4.57</td><td>+2.17</td><td>+3.89</td><td>+2.91</td><td>+4.93</td></tr>
+        <tr><td>Kimi-K2</td><td>+1.96</td><td>+4.77</td><td>+1.63</td><td>+4.05</td><td>+2.24</td><td>+5.18</td></tr>
+        <tr><td>GPT-OSS-120B</td><td>+2.44</td><td>+5.75</td><td>+2.06</td><td>+5.12</td><td>+2.79</td><td>+6.08</td></tr>
+        <tr><td>Gemini-3-Flash</td><td>+1.41</td><td>+4.62</td><td>+1.08</td><td>+3.94</td><td>+1.72</td><td>+4.95</td></tr>
+        <tr><td>Gemini-3-Pro</td><td>+2.95</td><td>+5.48</td><td>+2.51</td><td>+4.83</td><td>+3.28</td><td>+5.81</td></tr>
+        <tr class="ours"><td>ProfiLLM-DPO</td><td class="best">+4.02</td><td>+6.03</td><td class="best">+3.58</td><td>+5.47</td><td class="best">+4.35</td><td>+6.41</td></tr>
+        <tr class="ours"><td>ProfiLLM</td><td>+3.52</td><td class="best">+7.10</td><td>+3.14</td><td class="best">+6.52</td><td>+3.87</td><td class="best">+7.53</td></tr>
+      </tbody>
+      <caption>Static transcription of Table&nbsp;1 (Overall columns). Morning/Noon/Evening breakdowns are in the full appendix.</caption>
+    </table></div>
+
+    <h3 class="subh">Table 2 &mdash; Multi-task prediction AUC improvement (%) over Structured-Only</h3>
+    <div class="tw"><table class="dt" id="t2">
+      <thead>
+        <tr><th rowspan="2">Method</th><th colspan="4">City A</th><th colspan="4">City B</th><th colspan="4">City C</th></tr>
+        <tr><th>Acc</th><th>D-Can</th><th>P-Can</th><th>Succ</th><th>Acc</th><th>D-Can</th><th>P-Can</th><th>Succ</th><th>Acc</th><th>D-Can</th><th>P-Can</th><th>Succ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Llama-3.3-70B</td><td class="neg">&minus;1.10</td><td class="neg">&minus;0.71</td><td>+0.19</td><td class="neg">&minus;1.14</td><td class="neg">&minus;0.64</td><td>+0.38</td><td class="neg">&minus;0.38</td><td class="neg">&minus;0.45</td><td class="neg">&minus;0.01</td><td class="neg">&minus;0.34</td><td>+0.25</td><td>+0.01</td></tr>
+        <tr><td>Qwen3-Next-80B</td><td class="neg">&minus;0.22</td><td class="neg">&minus;0.38</td><td>+1.65</td><td>+0.02</td><td class="neg">&minus;0.52</td><td class="neg">&minus;0.40</td><td class="neg">&minus;5.71</td><td class="neg">&minus;7.57</td><td class="neg">&minus;0.03</td><td class="neg">&minus;0.16</td><td>+0.27</td><td class="neg">&minus;0.06</td></tr>
+        <tr><td>DeepSeek-R1</td><td>+0.06</td><td>+0.23</td><td>+2.05</td><td>+0.25</td><td>+0.31</td><td>+1.85</td><td>+1.06</td><td>+0.48</td><td>+0.21</td><td class="neg">&minus;0.13</td><td>+0.04</td><td>+0.14</td></tr>
+        <tr><td>Kimi-K2</td><td class="neg">&minus;0.17</td><td>+0.82</td><td>+2.11</td><td class="neg">&minus;0.07</td><td class="neg">&minus;2.44</td><td class="neg">&minus;0.44</td><td class="neg">&minus;6.33</td><td class="neg">&minus;1.91</td><td>+0.50</td><td class="neg">&minus;0.11</td><td>+0.40</td><td>+0.45</td></tr>
+        <tr><td>Gemini-3-Flash</td><td>+0.10</td><td>+0.53</td><td>+1.83</td><td>+0.42</td><td>+0.24</td><td>+1.76</td><td class="neg">&minus;0.11</td><td>+0.38</td><td>+0.03</td><td class="neg">&minus;0.26</td><td>+0.37</td><td>+0.04</td></tr>
+        <tr><td>Gemini-3-Pro</td><td class="neg">&minus;0.08</td><td class="neg">&minus;0.68</td><td>+2.37</td><td>+0.56</td><td class="neg">&minus;0.44</td><td>+0.50</td><td>+0.24</td><td class="neg">&minus;0.31</td><td>+0.02</td><td class="neg">&minus;0.03</td><td>+0.10</td><td>+0.05</td></tr>
+        <tr><td>GPT-OSS-120B</td><td class="neg">&minus;0.02</td><td>+0.14</td><td>+1.83</td><td>+0.17</td><td>+0.11</td><td>+1.64</td><td>+0.63</td><td>+0.29</td><td class="neg">&minus;0.09</td><td class="neg">&minus;0.02</td><td>+0.44</td><td class="neg">&minus;0.06</td></tr>
+        <tr class="ours"><td>ProfiLLM-DPO</td><td>+1.51</td><td>+2.76</td><td>+6.02</td><td>+1.72</td><td>+2.25</td><td>+4.98</td><td>+5.55</td><td>+2.58</td><td>+0.65</td><td>+5.93</td><td>+5.30</td><td>+2.37</td></tr>
+        <tr class="ours"><td>ProfiLLM</td><td>+1.56</td><td>+3.88</td><td class="best">+6.14</td><td>+1.80</td><td>+2.26</td><td>+4.98</td><td>+6.00</td><td>+2.60</td><td>+0.84</td><td>+5.95</td><td>+5.65</td><td>+2.48</td></tr>
+      </tbody>
+      <caption>Static transcription of Table&nbsp;2. The headline <b>+6.14%</b> is ProfiLLM on P-Cancel, City&nbsp;A (highlighted). Note that several off-the-shelf backbones <em>degrade</em> prediction (e.g., Qwen3-Next-80B &minus;7.57% Success / City&nbsp;B, Kimi-K2 &minus;6.33% P-Cancel / City&nbsp;B): profile fluency is not a reliable proxy for utility.</caption>
+    </table></div>
+
+    <div class="cards figrow" style="grid-template-columns:repeat(auto-fit,minmax(360px,1fr));margin-top:24px">
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2970" height="1471" src="static/images/online_ab.png" alt="14-day online A/B bar chart: GMV and CR rise; CBA, PCR, DCR, BER fall."><figcaption>14-day online A/B (City&nbsp;A): every realized rate moves in the desirable direction. <a class="pdflink" href="static/pdfs/figs/online_ab.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2377" height="1062" src="static/images/ablation.png" alt="Ablation bar chart: removing each component degrades metrics; clustering and global knowledge matter most."><figcaption>Ablation (City&nbsp;A): Global Knowledge &amp; User Clustering give the largest gains. <a class="pdflink" href="static/pdfs/figs/ablation.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1700" height="832" src="static/images/pareto.png" alt="Cost-quality scatter of nine LLM backbones; ProfiLLM-DPO at the Pareto frontier."><figcaption>Cost&ndash;quality across nine backbones: ProfiLLM-DPO is Pareto-best. <a class="pdflink" href="static/pdfs/figs/pareto.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1838" height="726" src="static/images/longtail.png" alt="Histogram of per-user order counts showing a heavy long tail."><figcaption>Long-tail: 96% of City&nbsp;A passengers appear in &le;30 orders. <a class="pdflink" href="static/pdfs/figs/longtail.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+    </div>
+
+    <h3 class="subh" id="claimmap">Claim &rarr; evidence map</h3>
+    <table class="claim">
+      <thead><tr><th>Headline claim</th><th>Value</th><th>Where to verify</th></tr></thead>
+      <tbody>
+        <tr><td>Outcome-prediction AUC</td><td class="n">+6.14%</td><td>Table&nbsp;2 above (P-Cancel, City&nbsp;A)</td></tr>
+        <tr><td>Dispatching simulation GMV</td><td class="n">+4.35%</td><td>Table&nbsp;1 above (City&nbsp;C, ProfiLLM-DPO)</td></tr>
+        <tr><td>Online A/B GMV / CBA</td><td class="n">+0.47% / &minus;0.82%</td><td><a href="appendix.html#extended-ab">Appendix O &mdash; Extended 14-day A/B</a></td></tr>
+        <tr><td>Added online latency</td><td class="n">&lt;0.01 ms/pair</td><td><a href="appendix.html#complexity">Appendix N &mdash; Complexity analysis</a></td></tr>
+        <tr><td>Offline refresh cost</td><td class="n">10.6&times; cheaper</td><td><a href="appendix.html#offline-cost">Appendix M &mdash; Offline system cost</a></td></tr>
+        <tr><td>Cluster coverage</td><td class="n">96 / 348,464</td><td><a href="appendix.html#offline-cost">Appendix M &mdash; Offline system cost</a> (&approx;3,630&times;)</td></tr>
+        <tr><td>Robustness to cluster count</td><td class="n">&le;0.6 p.p.</td><td><a href="appendix.html#cluster-sensitivity">Appendix J &mdash; Cluster-count sensitivity</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================= EXPLORE ======================= -->
+<section id="explore" class="revbox">
+  <div class="wrap">
+    <h2><span class="bar"></span>Appendix (A&ndash;Q)</h2>
+    <p class="lede">The full appendix is rendered on this site for convenient review, with figure, table, and equation numbers matching the paper. Jump straight to any section:</p>
+    <div class="revgrid">
+      <a href="appendix.html#heterogeneity"><span class="tag">A</span> Behavioral heterogeneity</a>
+      <a href="appendix.html#case-studies"><span class="tag">B</span> Case studies</a>
+      <a href="appendix.html#background"><span class="tag">C</span> Background</a>
+      <a href="appendix.html#tools"><span class="tag">D</span> Tool catalog (27)</a>
+      <a href="appendix.html#algorithms"><span class="tag">E</span> Algorithm pseudocode</a>
+      <a href="appendix.html#archetypes"><span class="tag">F</span> Cluster archetypes</a>
+      <a href="appendix.html#simulator"><span class="tag">G</span> Simulator architecture</a>
+      <a href="appendix.html#wait-time"><span class="tag">H</span> Passenger wait-time</a>
+      <a href="appendix.html#hourly"><span class="tag">I</span> Hourly performance</a>
+      <a href="appendix.html#cluster-sensitivity"><span class="tag">J</span> Cluster-count sensitivity</a>
+      <a href="appendix.html#lambda"><span class="tag">K</span> &lambda; sensitivity</a>
+      <a href="appendix.html#dpo-vs-exploration"><span class="tag">L</span> DPO vs. exploration</a>
+      <a href="appendix.html#offline-cost"><span class="tag">M</span> Offline system cost</a>
+      <a href="appendix.html#complexity"><span class="tag">N</span> Complexity analysis</a>
+      <a href="appendix.html#extended-ab"><span class="tag">O</span> Extended 14-day A/B</a>
+      <a href="appendix.html#privacy-fairness"><span class="tag">P</span> Privacy &amp; fairness</a>
+      <a href="appendix.html#prompts"><span class="tag">Q</span> Prompt templates</a>
+      <a href="#results"><span class="tag">&sect;</span> Full result tables (1 &amp; 2)</a>
+    </div>
+    <p class="revfoot">Prefer the typeset version? <a href="files/ProfiLLM_appendix.pdf" target="_blank" rel="noopener">Appendix PDF</a> &middot; <a href="files/ProfiLLM_paper.pdf" target="_blank" rel="noopener">Paper PDF</a> &middot; <a href="#claimmap">claim&rarr;evidence map</a>.</p>
+  </div>
+</section>
+
+
+<!-- ======================= BIBTEX ======================= -->
+<section id="bibtex">
+  <div class="wrap">
+    <h2><span class="bar"></span>BibTeX</h2>
+    <pre id="bibsrc">@article{lyu2027profillm,
+  title   = {{ProfiLLM}: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch},
+  author  = {Lyu, Tengfei and Yuan, Zirui and Liu, Xu and Wan, Kai and Lu, Zihao and Ma, Li and Liu, Hao},
+  year    = {2026},
+  note    = {Under submission to PVLDB (Scalable Data Science)},
+  url     = {https://profillm.github.io}
+}<button class="copy" onclick="copyBib(this)">Copy</button></pre>
+  </div>
+</section>
+
+<!-- ======================= CODE / REPRO ======================= -->
+<section id="code">
+  <div class="wrap">
+    <h2><span class="bar"></span>Code &amp; Reproducibility</h2>
+    <p>A sanitized, symbolic reference implementation of the ProfiLLM pipeline is released at <a href="https://github.com/ProfiLLM/ProfiLLM" target="_blank" rel="noopener">github.com/ProfiLLM/ProfiLLM</a>. It runs end-to-end on <b>synthetic mock data</b> with a local mock LLM (CPU-only, no build pipeline), and mirrors the paper's components: the 27-tool catalog, the Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize mining agent, the profile-exploration loop with the LOGIC-rule utility proxy and DPO preference-pair construction, the prompt templates, and a replay-simulator interface.</p>
+    <div class="note"><b>Data &amp; IP notice.</b> To comply with enterprise data-governance and privacy policy, the public repository conveys the method and interfaces only. It contains no real ride-hailing data, user/driver/order identifiers, GPS traces, proprietary feature schemas, trained model weights, internal service endpoints, or deployment scripts. The published experimental results were produced on internal infrastructure (1&times; NVIDIA L20 GPU; Gemini-class analyst LLM) that is not part of this release.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="fmark">ProfiLLM</span>
+    <p>Project page for the VLDB 2027 (Scalable Data Science) submission &middot; deployed at DiDi Chuxing.<br>
+    <a href="files/ProfiLLM_paper.pdf">Paper</a> &middot; <a href="appendix.html">Appendix</a> &middot; <a href="https://github.com/ProfiLLM/ProfiLLM">Code</a> &middot; <a href="#bibtex">BibTeX</a><br>
+    Last updated June 2026 &middot; Page content &copy; the authors.</p>
+  </div>
+</footer>
+
+<!-- lightbox + back-to-top -->
+<div id="lb" class="lb" aria-hidden="true"><img id="lbimg" alt=""></div>
+<button id="toTop" type="button" aria-label="Back to top" title="Back to top">&uarr;</button>
+
+<script>
+function flash(b,msg){if(!b)return;var o=b.innerText;b.innerText=msg;setTimeout(function(){b.innerText=o;},1400);}
+function copyBib(btn){var p=document.getElementById('bibsrc').cloneNode(true);p.querySelector('.copy').remove();navigator.clipboard.writeText(p.innerText.trim()).then(function(){flash(btn,'Copied!');},function(){flash(btn,'Press Ctrl+C');});}
+// lightbox
+(function(){
+  var lb=document.getElementById('lb'), li=document.getElementById('lbimg');
+  function close(){lb.classList.remove('on');lb.setAttribute('aria-hidden','true');li.src='';}
+  document.querySelectorAll('img.zoom').forEach(function(im){
+    im.addEventListener('click',function(){li.src=im.currentSrc||im.src;li.alt=im.alt;lb.classList.add('on');lb.setAttribute('aria-hidden','false');});
+  });
+  lb.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+// back-to-top
+(function(){
+  var t=document.getElementById('toTop');
+  addEventListener('scroll',function(){t.classList.toggle('show',scrollY>600);});
+  t.addEventListener('click',function(){scrollTo({top:0,behavior:'smooth'});});
+})();
+// scroll-spy nav
+(function(){
+  var links=[...document.querySelectorAll('.navlinks a[href^="#"]')];
+  var byId=Object.fromEntries(links.map(function(a){return [a.getAttribute('href').slice(1),a];}));
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting && byId[e.target.id]){links.forEach(function(l){l.classList.remove('active');});byId[e.target.id].classList.add('active');}
+  });},{rootMargin:'-45% 0px -50% 0px'});
+  document.querySelectorAll('section[id],header[id]').forEach(function(s){if(byId[s.id])io.observe(s);});
+})();
+
+</script>
+</body>
+</html>
