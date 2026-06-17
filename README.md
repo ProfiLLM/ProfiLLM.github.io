@@ -39,19 +39,6 @@ Section letters match the paper:
 `#cluster-sensitivity` J · `#lambda` K · `#dpo-vs-exploration` L · `#offline-cost` M ·
 `#complexity` N · `#extended-ab` O · `#privacy-fairness` P · `#prompts` Q
 
-## Updating after a paper revision
-
-1. Recompile `main.tex` (two passes), then refresh the PDFs:
-   - `files/ProfiLLM_paper.pdf` ← compressed copy of `main.pdf`.
-   - `files/ProfiLLM_appendix.pdf` ← appendix pages of `main.pdf` (`pdfseparate` + `pdfunite`), compressed with Ghostscript `-dPDFSETTINGS=/printer`.
-2. If the appendix text changed, mirror it in the matching section of `appendix.html`. Figure, table, and equation numbers must stay in sync with the compiled paper.
-
-## Hosting
-
-This is a GitHub user/organization site: it resolves at `https://profillm.github.io` when an account or org named `ProfiLLM` owns a repo named `ProfiLLM.github.io` (GitHub lowercases the host). Push these files to that repo and enable **Settings → Pages → Deploy from `main` / root**.
-
-If that name is unavailable, push to a repo named `ProfiLLM` under any account to serve a project site at `https://<account>.github.io/ProfiLLM`, and update the URL printed in the paper abstract accordingly.
-
 ## Related
 
 - Code repository (release pending enterprise review): https://github.com/ProfiLLM/ProfiLLM
