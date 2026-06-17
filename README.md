@@ -30,17 +30,7 @@ This repository hosts the static project page for ProfiLLM. It needs no build st
 | `static/pdfs/figs/*.pdf` | Vector versions of every figure, linked from the captions. |
 | `.nojekyll` | Tells GitHub Pages to serve `static/` verbatim. |
 
-## Appendix anchors
+## Code & data
 
-Section letters match the paper:
+The code and data are under enterprise review at DiDi and will be released, upon approval, in the [ProfiLLM code repository](https://github.com/ProfiLLM/ProfiLLM). Per DiDi's data-governance policy, raw ride-hailing data and proprietary system details cannot be shared; the release will cover the method and interfaces with anonymized feature names.
 
-`#heterogeneity` A · `#case-studies` B · `#background` C · `#tools` D · `#algorithms` E ·
-`#archetypes` F (`#cluster-viz` F.1) · `#simulator` G · `#wait-time` H · `#hourly` I ·
-`#cluster-sensitivity` J · `#lambda` K · `#dpo-vs-exploration` L · `#offline-cost` M ·
-`#complexity` N · `#extended-ab` O · `#privacy-fairness` P · `#prompts` Q
-
-## Related
-
-- Code repository (release pending enterprise review): https://github.com/ProfiLLM/ProfiLLM
-</content>
-</invoke>
