@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch</title>
-<meta name="description" content="ProfiLLM: utility-aligned agentic user profiling deployed on DiDi's production ride-hailing dispatcher (VLDB 2027, Scalable Data Science track). Project page with the full appendix, extended experiments, and code.">
+<meta name="description" content="ProfiLLM: utility-aligned agentic user profiling deployed on DiDi's production ride-hailing dispatcher (PVLDB, Scalable Data Science track; revised version). Project page with the paper, the online appendix, and the result tables.">
 <link rel="canonical" href="https://profillm.github.io/">
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch">
-<meta property="og:description" content="VLDB 2027 (Scalable Data Science). Deployed at DiDi. Full appendix, extended experiments, and code.">
+<meta property="og:description" content="PVLDB (Scalable Data Science), revised version. Deployed at DiDi. Paper, online appendix, and result tables.">
 <meta property="og:image" content="https://profillm.github.io/static/images/framework.png">
 <meta property="og:url" content="https://profillm.github.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -258,8 +258,8 @@
     </div>
 
     <figure class="teaser">
-      <img class="zoom" loading="eager" decoding="async" src="static/images/framework.png" alt="Three-panel ProfiLLM framework: (a) tool-augmented global knowledge mining and (b) utility-aligned profile exploration run offline; (c) cached-embedding online serving path." style="border:none;box-shadow:none">
-      <figcaption><b>ProfiLLM overview.</b> (a)&nbsp;Tool-Augmented Global Knowledge Mining and (b)&nbsp;Utility-Aligned Profile Exploration run offline; (c)&nbsp;the online serving path performs only a cluster-rule lookup and a cached embedding fetch &mdash; zero online LLM inference. <a class="pdflink" href="static/pdfs/figs/framework.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption>
+      <img class="zoom" loading="eager" decoding="async" src="static/images/framework.png" alt="Three-panel ProfiLLM framework: (A) tool-augmented global knowledge mining and (B) utility-aligned profile exploration run offline; (C) online prediction and matching with static lookups, a gated fusion layer over the production predictor, and zero online LLM inference." style="border:none;box-shadow:none">
+      <figcaption><b>ProfiLLM overview.</b> (A)&nbsp;An LLM agent chains 27 operators over platform-scale logs into a nearest-centroid user clustering \(\mathcal{A}\), global knowledge \(\mathcal{K}\), and regional priors \(\mathcal{R}\). (B)&nbsp;Per cluster, candidate profiles are ranked by a LOGIC-rule proxy of prediction utility; the best are refined and embedded, and the resulting preferences fine-tune a compact DPO generator for refresh. (C)&nbsp;Online, a cluster lookup and a cached embedding feed a gated fusion layer on top of the frozen production predictor &mdash; zero online LLM inference. <a class="pdflink" href="static/pdfs/figs/framework.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption>
     </figure>
   </div>
 </header>
@@ -268,8 +268,8 @@
 <section id="abstract">
   <div class="wrap">
     <h2><span class="bar"></span>Abstract</h2>
-    <p class="abstract">Bringing Large Language Models (LLMs) into industrial ride-hailing dispatch as semantic feature extractors over platform-scale behavioral logs is a compelling but under-explored data systems problem. Production matching pipelines remain dominated by structured numerical features, yet decisive behavioral signals (e.g., a driver's habitual aversion to certain regions) are inherently contextual and naturally expressible as LLM-generated user profiles. However, scaling such profiling to a live, millisecond-latency dispatcher faces three intertwined constraints rarely addressed together: logs exceed any LLM's context window by orders of magnitude; most users are long-tail; and surface-fluent profiles do not necessarily improve downstream prediction utility.</p>
-    <p class="abstract">We present <b>ProfiLLM</b>, an agentic LLM data pipeline with two modules. <b>(1) Tool-Augmented Global Knowledge Mining</b> equips an LLM agent with 27 analytical tools to mine platform-scale data, producing reusable global knowledge, adaptive clustering rules, and regional supply&ndash;demand priors. <b>(2) Utility-Aligned Profile Exploration</b> generates candidate profiles per cluster, evaluates them via a lightweight downstream-utility proxy, iteratively refines the best, and constructs preference pairs for DPO fine-tuning. A strict offline&ndash;online contract keeps all LLM reasoning offline; online serving reduces to a cached cluster-embedding lookup with sub-millisecond overhead and zero online LLM inference. Deployed on DiDi's production dispatcher, ProfiLLM achieves up to <b>+6.14%</b> AUC, up to <b>+4.35%</b> simulation GMV, and a 14-day A/B with <b>+0.47%</b> GMV, <b>+0.33%</b> CR, and <b>&minus;0.82%</b> Cancel-Before-Accept.</p>
+    <p class="abstract">Bringing Large Language Models (LLMs) into industrial ride-hailing dispatch as semantic feature extractors over platform-scale behavioral logs is a compelling but under-explored data systems problem. Production matching pipelines remain dominated by structured numerical features, yet decisive behavioral signals, such as a driver's habitual aversion to certain regions, are inherently contextual and expressible as LLM-generated user profiles. However, scaling such profiling to a live, millisecond-latency dispatcher faces three intertwined constraints rarely addressed together: on a platform with millions of daily orders, logs exceed any LLM's context window by orders of magnitude; most users are long-tail, with too few interactions for per-user profiling; and surface-fluent profiles do not necessarily improve downstream prediction utility.</p>
+    <p class="abstract">We present <b>ProfiLLM</b>, an agentic LLM data pipeline that operationalizes utility-aligned user profiling for production matching systems through two modules. <b>(1) Tool-Augmented Global Knowledge Mining</b> equips an LLM agent with 27 analytical tools to mine platform-scale data, producing reusable global knowledge, adaptive user clustering rules, and region-level supply-demand priors. <b>(2) Utility-Aligned Profile Exploration</b> generates multiple candidate profiles per cluster, evaluates them via a lightweight downstream utility proxy, iteratively refines the best candidates and constructs preference pairs for DPO fine-tuning. Deployed at DiDi, ProfiLLM achieves up to <b>+6.14%</b> relative AUC gain and <b>+4.35%</b> GMV gain in simulation; a 14-day online A/B test yields <b>+0.47%</b> GMV and <b>+0.33%</b> completion.</p>
   </div>
 </section>
 
@@ -277,37 +277,37 @@
 <section id="highlights">
   <div class="wrap">
     <h2><span class="bar"></span>Highlights</h2>
-    <p class="lede">Behavioral signals that structured features miss are decisive for dispatch, yet an LLM cannot run inside a 2-second matching loop. ProfiLLM mines logs with an agentic toolkit, DPO-aligns cluster profiles to a downstream-utility proxy, and keeps all LLM reasoning offline &mdash; so the online path is a cached lookup that lifts prediction and matching quality at sub-millisecond cost.</p>
+    <p class="lede">Behavioral signals that structured features miss matter for dispatch, yet an LLM cannot run inside a 2-second matching loop. ProfiLLM mines logs with an agentic toolkit, selects cluster profiles by a downstream-utility proxy, and keeps all LLM reasoning offline; online, a cached profile embedding enters the production predictor through a small gated fusion layer.</p>
 
     <div class="statgroups">
       <div class="statgroup">
-        <div class="sglabel">Prediction quality &middot; offline</div>
+        <div class="sglabel">Offline evaluation &middot; three cities</div>
         <div class="sgrow">
-          <a class="metric" href="#results"><div class="v">+6.14%</div><div class="l">Outcome-prediction AUC</div></a>
-          <a class="metric" href="#results"><div class="v">+4.35%</div><div class="l">GMV in dispatching simulation</div></a>
+          <a class="metric" href="#t2"><div class="v">+6.14%</div><div class="l">Outcome-prediction AUC (ProfiLLM, P-Cancel, City&nbsp;A; Table&nbsp;2)</div></a>
+          <a class="metric" href="#t1"><div class="v">+4.35%</div><div class="l">Simulated GMV (ProfiLLM-DPO, City&nbsp;C; directional evidence)</div></a>
         </div>
       </div>
       <div class="statgroup">
-        <div class="sglabel">Live 14-day A/B &middot; DiDi production</div>
+        <div class="sglabel">14-day switchback A/B &middot; DiDi production, City&nbsp;A</div>
         <div class="sgrow">
-          <a class="metric" href="appendix.html#extended-ab"><div class="v">+0.47%</div><div class="l">GMV</div></a>
-          <a class="metric" href="appendix.html#extended-ab"><div class="v">&minus;0.82%</div><div class="l">Cancel-Before-Accept</div></a>
+          <a class="metric" href="#ab"><div class="v">+0.47%</div><div class="l">GMV (95% CI [+0.04%, +0.90%], \(p=0.03\))</div></a>
+          <a class="metric" href="#ab"><div class="v">+0.33%</div><div class="l">Completion rate (95% CI [+0.02%, +0.64%], \(p=0.037\))</div></a>
         </div>
       </div>
       <div class="statgroup">
-        <div class="sglabel">Serving cost</div>
+        <div class="sglabel">Serving and offline cost</div>
         <div class="sgrow">
-          <a class="metric" href="appendix.html#complexity"><div class="v">&lt;0.01 ms</div><div class="l">Added latency / OD pair</div></a>
-          <a class="metric" href="appendix.html#offline-cost"><div class="v">10.6&times;</div><div class="l">Cheaper offline refresh</div></a>
+          <a class="metric" href="appendix.html#complexity"><div class="v">0</div><div class="l">Online LLM calls; two cached lookups and a small fusion layer per OD pair</div></a>
+          <a class="metric" href="appendix.html#cost"><div class="v">&approx;5.8&nbsp;h</div><div class="l">Initial offline run on 44.3M City&nbsp;A records (Table&nbsp;A6)</div></a>
         </div>
       </div>
     </div>
 
     <ul class="contrib">
-      <li><b>First deployed LLM profiler</b> for a production ride-hailing dispatcher (2-s cycle, ~200&nbsp;ms budget).</li>
-      <li><b>Agentic knowledge mining</b> &mdash; an LLM agent chains <a href="appendix.html#tools">27 tools</a> under Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize.</li>
-      <li><b>Utility-aligned profiles</b> &mdash; selected and <a href="appendix.html#dpo-vs-exploration">DPO-aligned</a> to a downstream-utility proxy.</li>
-      <li><b>Strict offline&ndash;online contract</b> &mdash; batch-offline reasoning; serving is a cached lookup with zero online LLM inference.</li>
+      <li><b>Agentic LLM data pipeline</b> with a strict offline&ndash;online contract: all LLM reasoning is batch-offline, and the dispatcher serves only precomputed cluster-level profile embeddings.</li>
+      <li><b>Tool-augmented knowledge mining</b> &mdash; an LLM agent chains <a href="appendix.html#tools">27 operators</a> under Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize.</li>
+      <li><b>Utility-aligned profile exploration</b> &mdash; candidates are ranked by a LOGIC-rule proxy of prediction utility, and the resulting preferences train a compact <a href="appendix.html#algorithms">DPO generator</a> for cheap refresh.</li>
+      <li><b>Deployed at DiDi</b> &mdash; a 14-day switchback A/B test in City&nbsp;A shows significant GMV and completion gains.</li>
     </ul>
   </div>
 </section>
@@ -320,18 +320,18 @@
     <div class="layers">
       <div class="layer"><span class="num">1</span><span class="lk off">Offline</span>
         <h3>Tool-Augmented Knowledge Mining</h3>
-        <p>An LLM agent equipped with 27 analytical tools mines platform-scale logs under an Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize paradigm, producing global knowledge \(\mathcal{K}\), an interpretable clustering rule set \(\mathcal{A}\), and regional supply&ndash;demand priors \(\mathcal{R}\).</p>
+        <p>An LLM agent equipped with 27 analytical tools mines platform-scale logs under an Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize paradigm, producing global knowledge \(\mathcal{K}\), a nearest-centroid user clustering \(\mathcal{A}\) over standardized behavioral statistics, and regional supply&ndash;demand priors \(\mathcal{R}\).</p>
       </div>
       <div class="layer"><span class="num">2</span><span class="lk off">Offline</span>
         <h3>Utility-Aligned Profile Exploration</h3>
-        <p>For each cluster, candidate profiles are generated, scored by a lightweight LOGIC-rule utility proxy, iteratively refined on prediction-error feedback, and distilled via DPO into a single-pass generator; each profile is encoded once into a \(d\)-dimensional embedding.</p>
+        <p>Per cluster, candidate profiles (ANALYSIS, PROFILE, LOGIC) are ranked by a LOGIC-rule proxy of prediction utility on a held-out selection split; the best is refined with feedback on its LOGIC errors, and the five best are embedded with a frozen text encoder. The resulting preferences fine-tune a compact DPO generator for single-pass refresh.</p>
       </div>
       <div class="layer"><span class="num">3</span><span class="lk on">Online</span>
         <h3>Outcome Prediction &amp; Matching</h3>
-        <p>Per OD pair, serving performs only a deterministic cluster-rule lookup and a cached embedding fetch, concatenated with structured features for the production multi-task predictor. Zero online LLM inference; under 0.01&nbsp;ms added per pair.</p>
+        <p>Per OD pair, the dispatcher looks up each user's cluster and cached embedding. A small gated fusion layer adds the profile to the frozen production multi-task predictor; users without a profile receive exactly the production prediction. Kuhn&ndash;Munkres matching is unchanged, and no LLM is called online.</p>
       </div>
     </div>
-    <p class="lede" style="margin-top:6px">The only artifacts crossing the offline&ndash;online boundary are the rule set \(\mathcal{A}\) and the cluster-embedding table \(\{\mathbf{e}_a\}\) &mdash; the structural reason ProfiLLM fits within DiDi's 200&nbsp;ms dispatch budget without modifying the matching stack.</p>
+    <p class="lede" style="margin-top:6px">Three artifacts cross the offline&ndash;online boundary: the cluster-assignment parameters \(\mathcal{A}\) (standardization parameters and centroids), the cluster-embedding table \(\{\mathbf{e}_a\}\) with the fusion weights, and the regional prior table \(\mathcal{R}\), which adds a bounded bonus to the matching weights (applied in the simulator, not in the online test). This narrow interface is why ProfiLLM fits within DiDi's 200&nbsp;ms dispatch budget without modifying the matching stack. Refresh runs at three levels: daily user reassignment, weekly profile regeneration, and monthly re-mining (Sec.&nbsp;3.5).</p>
   </div>
 </section>
 
@@ -339,9 +339,9 @@
 <section id="results">
   <div class="wrap">
     <h2><span class="bar"></span>Key Results</h2>
-    <p>ProfiLLM consistently outperforms traditional and naive-LLM baselines across three cities. Below are the full result tables (transcribed for on-page reading) and the headline figures. <span style="color:var(--muted)">Bold burgundy&nbsp;=&nbsp;per-column best; tinted rows are our methods; gray&nbsp;=&nbsp;negative.</span></p>
+    <p>Below are Tables&nbsp;1 and&nbsp;2 of the revised paper (transcribed for on-page reading) and the headline figures. <span style="color:var(--muted)">Bold burgundy&nbsp;=&nbsp;per-column best; tinted rows are our methods; gray&nbsp;=&nbsp;negative.</span></p>
 
-    <h3 class="subh">Table 1 &mdash; Dispatching simulation: relative improvement (%) over pickup-distance KM (Overall)</h3>
+    <h3 class="subh">Table 1 &mdash; Dispatching simulation: relative improvement (%) over pickup-distance KM (full day)</h3>
     <div class="tw"><table class="dt" id="t1">
       <thead>
         <tr><th rowspan="2">Method</th><th colspan="2">City A</th><th colspan="2">City B</th><th colspan="2">City C</th></tr>
@@ -356,11 +356,11 @@
         <tr><td>Kimi-K2</td><td>+1.96</td><td>+4.77</td><td>+1.63</td><td>+4.05</td><td>+2.24</td><td>+5.18</td></tr>
         <tr><td>GPT-OSS-120B</td><td>+2.44</td><td>+5.75</td><td>+2.06</td><td>+5.12</td><td>+2.79</td><td>+6.08</td></tr>
         <tr><td>Gemini-3-Flash</td><td>+1.41</td><td>+4.62</td><td>+1.08</td><td>+3.94</td><td>+1.72</td><td>+4.95</td></tr>
-        <tr><td>Gemini-3-Pro</td><td>+2.95</td><td>+5.48</td><td>+2.51</td><td>+4.83</td><td>+3.28</td><td>+5.81</td></tr>
+        <tr><td>Gemini-3.1-Pro</td><td>+2.95</td><td>+5.48</td><td>+2.51</td><td>+4.83</td><td>+3.28</td><td>+5.81</td></tr>
         <tr class="ours"><td>ProfiLLM-DPO</td><td class="best">+4.02</td><td>+6.03</td><td class="best">+3.58</td><td>+5.47</td><td class="best">+4.35</td><td>+6.41</td></tr>
-        <tr class="ours"><td>ProfiLLM</td><td>+3.52</td><td class="best">+7.10</td><td>+3.14</td><td class="best">+6.52</td><td>+3.87</td><td class="best">+7.53</td></tr>
+        <tr class="ours"><td>ProfiLLM&Dagger;</td><td>+3.52</td><td class="best">+7.10</td><td>+3.14</td><td class="best">+6.52</td><td>+3.87</td><td class="best">+7.53</td></tr>
       </tbody>
-      <caption>Static transcription of Table&nbsp;1 (Overall columns). Morning/Noon/Evening breakdowns are in the full appendix.</caption>
+      <caption>Static transcription of Table&nbsp;1. The simulator replays one real day per city, and all methods share one outcome model, ProfiLLM's own predictor (&Dagger;); only ProfiLLM applies the regional priors \(\mathcal{R}\). We therefore read the simulator for the direction of effects only (Sec.&nbsp;4.2; protocol and limitations in <a href="appendix.html#simulator">Appendix Section&nbsp;8</a>; time-of-day results in <a href="appendix.html#table-a5">Table&nbsp;A5</a>).</caption>
     </table></div>
 
     <h3 class="subh">Table 2 &mdash; Multi-task prediction AUC improvement (%) over Structured-Only</h3>
@@ -375,31 +375,31 @@
         <tr><td>DeepSeek-R1</td><td>+0.06</td><td>+0.23</td><td>+2.05</td><td>+0.25</td><td>+0.31</td><td>+1.85</td><td>+1.06</td><td>+0.48</td><td>+0.21</td><td class="neg">&minus;0.13</td><td>+0.04</td><td>+0.14</td></tr>
         <tr><td>Kimi-K2</td><td class="neg">&minus;0.17</td><td>+0.82</td><td>+2.11</td><td class="neg">&minus;0.07</td><td class="neg">&minus;2.44</td><td class="neg">&minus;0.44</td><td class="neg">&minus;6.33</td><td class="neg">&minus;1.91</td><td>+0.50</td><td class="neg">&minus;0.11</td><td>+0.40</td><td>+0.45</td></tr>
         <tr><td>Gemini-3-Flash</td><td>+0.10</td><td>+0.53</td><td>+1.83</td><td>+0.42</td><td>+0.24</td><td>+1.76</td><td class="neg">&minus;0.11</td><td>+0.38</td><td>+0.03</td><td class="neg">&minus;0.26</td><td>+0.37</td><td>+0.04</td></tr>
-        <tr><td>Gemini-3-Pro</td><td class="neg">&minus;0.08</td><td class="neg">&minus;0.68</td><td>+2.37</td><td>+0.56</td><td class="neg">&minus;0.44</td><td>+0.50</td><td>+0.24</td><td class="neg">&minus;0.31</td><td>+0.02</td><td class="neg">&minus;0.03</td><td>+0.10</td><td>+0.05</td></tr>
+        <tr><td>Gemini-3.1-Pro</td><td class="neg">&minus;0.08</td><td class="neg">&minus;0.68</td><td>+2.37</td><td>+0.56</td><td class="neg">&minus;0.44</td><td>+0.50</td><td>+0.24</td><td class="neg">&minus;0.31</td><td>+0.02</td><td class="neg">&minus;0.03</td><td>+0.10</td><td>+0.05</td></tr>
         <tr><td>GPT-OSS-120B</td><td class="neg">&minus;0.02</td><td>+0.14</td><td>+1.83</td><td>+0.17</td><td>+0.11</td><td>+1.64</td><td>+0.63</td><td>+0.29</td><td class="neg">&minus;0.09</td><td class="neg">&minus;0.02</td><td>+0.44</td><td class="neg">&minus;0.06</td></tr>
         <tr class="ours"><td>ProfiLLM-DPO</td><td>+1.51</td><td>+2.76</td><td>+6.02</td><td>+1.72</td><td>+2.25</td><td>+4.98</td><td>+5.55</td><td>+2.58</td><td>+0.65</td><td>+5.93</td><td>+5.30</td><td>+2.37</td></tr>
         <tr class="ours"><td>ProfiLLM</td><td>+1.56</td><td>+3.88</td><td class="best">+6.14</td><td>+1.80</td><td>+2.26</td><td>+4.98</td><td>+6.00</td><td>+2.60</td><td>+0.84</td><td>+5.95</td><td>+5.65</td><td>+2.48</td></tr>
       </tbody>
-      <caption>Static transcription of Table&nbsp;2. The headline <b>+6.14%</b> is ProfiLLM on P-Cancel, City&nbsp;A (highlighted). Note that several off-the-shelf backbones <em>degrade</em> prediction (e.g., Qwen3-Next-80B &minus;7.57% Success / City&nbsp;B, Kimi-K2 &minus;6.33% P-Cancel / City&nbsp;B): profile fluency is not a reliable proxy for utility.</caption>
+      <caption>Static transcription of Table&nbsp;2. The baseline rows retrain the predictor with each backbone's profile embeddings, the naive integration of Challenge&nbsp;3, under which several backbones <em>degrade</em> prediction (e.g., Qwen3-Next-80B &minus;7.57% Success / City&nbsp;B). Re-evaluated with ProfiLLM's gated fusion layer, every backbone improves all four tasks in all cities (+0.51% to +6.07%), and ProfiLLM remains best in all 12 city&ndash;task cells (two ties), but by at most +1.02% (D-Cancel, City&nbsp;A) and +0.28% elsewhere (Sec.&nbsp;4.3).</caption>
     </table></div>
 
     <div class="cards figrow" style="grid-template-columns:repeat(auto-fit,minmax(360px,1fr));margin-top:24px">
-      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2970" height="1471" src="static/images/online_ab.png" alt="14-day online A/B bar chart: GMV and CR rise; CBA, PCR, DCR, BER fall."><figcaption>14-day online A/B (City&nbsp;A): every realized rate moves in the desirable direction. <a class="pdflink" href="static/pdfs/figs/online_ab.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
-      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2377" height="1062" src="static/images/ablation.png" alt="Ablation bar chart: removing each component degrades metrics; clustering and global knowledge matter most."><figcaption>Ablation (City&nbsp;A): Global Knowledge &amp; User Clustering give the largest gains. <a class="pdflink" href="static/pdfs/figs/ablation.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
-      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1700" height="832" src="static/images/pareto.png" alt="Cost-quality scatter of nine LLM backbones; ProfiLLM-DPO at the Pareto frontier."><figcaption>Cost&ndash;quality across nine backbones: ProfiLLM-DPO is Pareto-best. <a class="pdflink" href="static/pdfs/figs/pareto.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
-      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1838" height="726" src="static/images/longtail.png" alt="Histogram of per-user order counts showing a heavy long tail."><figcaption>Long-tail: 96% of City&nbsp;A passengers appear in &le;30 orders. <a class="pdflink" href="static/pdfs/figs/longtail.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure id="ab" style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2970" height="1471" src="static/images/online_ab.png" alt="14-day online A/B bar chart: GMV and CR rise significantly; CBA, PCR, DCR, and BER fall but not significantly."><figcaption>Figure&nbsp;5 &mdash; 14-day switchback A/B (City&nbsp;A): GMV and CR rise significantly (\(p=0.03\) and \(0.037\)); the four decreases are not significant (\(p\ge0.07\)). <a class="pdflink" href="static/pdfs/figs/online_ab.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="2377" height="1062" src="static/images/ablation.png" alt="Ablation bar chart on City A for removing global knowledge, user clustering, exploration, DPO fine-tuning, and regional priors."><figcaption>Figure&nbsp;4 &mdash; Ablation (City&nbsp;A). The variants come from the earlier retrained-predictor pipeline, so the bars combine each component's effect with that of the integration (Sec.&nbsp;4.4). <a class="pdflink" href="static/pdfs/figs/ablation.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1683" height="705" src="static/images/cluster_sens.png" alt="Prediction AUC per task versus the number of clusters, for ProfiLLM-DPO and ProfiLLM."><figcaption>Figure&nbsp;A6 &mdash; Profile granularity: beyond 16 clusters per side, AUC varies by only 0.21&ndash;0.32 points per task, while cost grows linearly. <a class="pdflink" href="static/pdfs/figs/cluster_sens.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
+      <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" width="1838" height="726" src="static/images/longtail.png" alt="Histogram of per-user order counts showing a heavy long tail."><figcaption>Figure&nbsp;A1 &mdash; Long tail: 96% of City&nbsp;A passengers have at most 30 orders, and 44.9% at most three. <a class="pdflink" href="static/pdfs/figs/longtail.pdf" target="_blank" rel="noopener">[PDF]</a></figcaption></figure>
     </div>
 
     <h3 class="subh" id="claimmap">Claim &rarr; evidence map</h3>
     <table class="claim">
       <thead><tr><th>Headline claim</th><th>Value</th><th>Where to verify</th></tr></thead>
       <tbody>
-        <tr><td>Outcome-prediction AUC</td><td class="n">+6.14%</td><td>Table&nbsp;2 above (P-Cancel, City&nbsp;A)</td></tr>
-        <tr><td>Dispatching simulation GMV</td><td class="n">+4.35%</td><td>Table&nbsp;1 above (City&nbsp;C, ProfiLLM-DPO)</td></tr>
-        <tr><td>Online A/B GMV / CBA</td><td class="n">+0.47% / &minus;0.82%</td><td><a href="appendix.html#extended-ab">Appendix O &mdash; Extended 14-day A/B</a></td></tr>
-        <tr><td>Added online latency</td><td class="n">&lt;0.01 ms/pair</td><td><a href="appendix.html#complexity">Appendix N &mdash; Complexity analysis</a></td></tr>
-        <tr><td>Offline refresh cost</td><td class="n">10.6&times; cheaper</td><td><a href="appendix.html#offline-cost">Appendix M &mdash; Offline system cost</a></td></tr>
-        <tr><td>Cluster coverage</td><td class="n">96 / 348,464</td><td><a href="appendix.html#offline-cost">Appendix M &mdash; Offline system cost</a> (&approx;3,630&times;)</td></tr>
+        <tr><td>Outcome-prediction AUC</td><td class="n">+6.14%</td><td>Table&nbsp;2 above (ProfiLLM, P-Cancel, City&nbsp;A); same-pipeline margins in Sec.&nbsp;4.3</td></tr>
+        <tr><td>Simulated GMV (directional)</td><td class="n">+4.35%</td><td>Table&nbsp;1 above (ProfiLLM-DPO, City&nbsp;C); <a href="appendix.html#simulator">Appendix Section&nbsp;8 &mdash; Simulator protocol</a></td></tr>
+        <tr><td>Online A/B GMV / CR</td><td class="n">+0.47% / +0.33%</td><td>Sec.&nbsp;4.5 and <a href="#ab">Figure&nbsp;5</a> (95% CIs and \(p\)-values)</td></tr>
+        <tr><td>Online LLM inference</td><td class="n">none</td><td>Sec.&nbsp;3.1; <a href="appendix.html#complexity">Appendix Section&nbsp;10 &mdash; Complexity</a></td></tr>
+        <tr><td>Initial offline run (City&nbsp;A)</td><td class="n">&approx;5.8&nbsp;h</td><td><a href="appendix.html#table-a6">Appendix Table&nbsp;A6</a></td></tr>
+        <tr><td>Profile granularity</td><td class="n">8&ndash;256 / side</td><td><a href="appendix.html#granularity">Appendix Section&nbsp;9 &mdash; Fig.&nbsp;A6</a></td></tr>
       </tbody>
     </table>
   </div>
@@ -408,27 +408,21 @@
 <!-- ======================= EXPLORE ======================= -->
 <section id="explore" class="revbox">
   <div class="wrap">
-    <h2><span class="bar"></span>Appendix (A&ndash;Q)</h2>
-    <p class="lede">The full appendix is rendered on this site for convenient review, with figure, table, and equation numbers matching the paper. Jump straight to any section:</p>
+    <h2><span class="bar"></span>Online Appendix</h2>
+    <p class="lede">The online appendix of the revised paper is rendered on this site for convenient review; its section, table (A1&ndash;A6), figure (A1&ndash;A7), and algorithm numbers match the typeset PDF. Jump straight to any section:</p>
     <div class="revgrid">
-      <a href="appendix.html#heterogeneity"><span class="tag">A</span> Behavioral heterogeneity</a>
-      <a href="appendix.html#case-studies"><span class="tag">B</span> Case studies</a>
-      <a href="appendix.html#background"><span class="tag">C</span> Background</a>
-      <a href="appendix.html#tools"><span class="tag">D</span> Tool catalog (27)</a>
-      <a href="appendix.html#algorithms"><span class="tag">E</span> Algorithm pseudocode</a>
-      <a href="appendix.html#archetypes"><span class="tag">F</span> Cluster archetypes</a>
-      <a href="appendix.html#simulator"><span class="tag">G</span> Simulator architecture</a>
-      <a href="appendix.html#wait-time"><span class="tag">H</span> Passenger wait-time</a>
-      <a href="appendix.html#hourly"><span class="tag">I</span> Hourly performance</a>
-      <a href="appendix.html#cluster-sensitivity"><span class="tag">J</span> Cluster-count sensitivity</a>
-      <a href="appendix.html#lambda"><span class="tag">K</span> &lambda; sensitivity</a>
-      <a href="appendix.html#dpo-vs-exploration"><span class="tag">L</span> DPO vs. exploration</a>
-      <a href="appendix.html#offline-cost"><span class="tag">M</span> Offline system cost</a>
-      <a href="appendix.html#complexity"><span class="tag">N</span> Complexity analysis</a>
-      <a href="appendix.html#extended-ab"><span class="tag">O</span> Extended 14-day A/B</a>
-      <a href="appendix.html#privacy-fairness"><span class="tag">P</span> Privacy &amp; fairness</a>
-      <a href="appendix.html#prompts"><span class="tag">Q</span> Prompt templates</a>
-      <a href="#results"><span class="tag">&sect;</span> Full result tables (1 &amp; 2)</a>
+      <a href="appendix.html#heterogeneity"><span class="tag">1</span> Behavioral heterogeneity</a>
+      <a href="appendix.html#tools"><span class="tag">2</span> The 27 operators and a mining trace</a>
+      <a href="appendix.html#algorithms"><span class="tag">3</span> Algorithms</a>
+      <a href="appendix.html#prompts"><span class="tag">4</span> Prompts</a>
+      <a href="appendix.html#profile-examples"><span class="tag">5</span> Profile examples</a>
+      <a href="appendix.html#lambda"><span class="tag">6</span> Blending coefficient &lambda;</a>
+      <a href="appendix.html#implementation"><span class="tag">7</span> Implementation details</a>
+      <a href="appendix.html#simulator"><span class="tag">8</span> Simulator protocol and limitations</a>
+      <a href="appendix.html#granularity"><span class="tag">9</span> Profile granularity</a>
+      <a href="appendix.html#cost"><span class="tag">10</span> Cost and complexity</a>
+      <a href="appendix.html#privacy-fairness"><span class="tag">11</span> Privacy &amp; fairness</a>
+      <a href="#results"><span class="tag">&sect;</span> Result tables (1 &amp; 2)</a>
     </div>
     <p class="revfoot">Prefer the typeset version? <a href="files/ProfiLLM_appendix.pdf" target="_blank" rel="noopener">Appendix PDF</a> &middot; <a href="files/ProfiLLM_paper.pdf" target="_blank" rel="noopener">Paper PDF</a> &middot; <a href="#claimmap">claim&rarr;evidence map</a>.</p>
   </div>
@@ -452,17 +446,17 @@
 <section id="code">
   <div class="wrap">
     <h2><span class="bar"></span>Code &amp; Reproducibility</h2>
-    <p>A sanitized, symbolic reference implementation of the ProfiLLM pipeline is released at <a href="https://github.com/ProfiLLM/ProfiLLM" target="_blank" rel="noopener">github.com/ProfiLLM/ProfiLLM</a>. It runs end-to-end on <b>synthetic mock data</b> with a local mock LLM (CPU-only, no build pipeline), and mirrors the paper's components: the 27-tool catalog, the Explore&ndash;Deepen&ndash;Validate&ndash;Synthesize mining agent, the profile-exploration loop with the LOGIC-rule utility proxy and DPO preference-pair construction, the prompt templates, and a replay-simulator interface.</p>
-    <div class="note"><b>Data &amp; IP notice.</b> To comply with enterprise data-governance and privacy policy, the public repository conveys the method and interfaces only. It contains no real ride-hailing data, user/driver/order identifiers, GPS traces, proprietary feature schemas, trained model weights, internal service endpoints, or deployment scripts. The published experimental results were produced on internal infrastructure (1&times; NVIDIA L20 GPU; Gemini-class analyst LLM) that is not part of this release.</div>
+    <p>The code and data are under enterprise review at DiDi and will be released, upon approval, at <a href="https://github.com/ProfiLLM/ProfiLLM" target="_blank" rel="noopener">github.com/ProfiLLM/ProfiLLM</a>. The repository currently hosts the project overview, the framework figure, and the online appendix (PDF). The operators, algorithms, and prompts are specified in the <a href="appendix.html">online appendix</a> (Table&nbsp;A1, Algorithms&nbsp;1&ndash;2, Table&nbsp;A3).</p>
+    <div class="note"><b>Data &amp; IP notice.</b> To comply with enterprise data-governance and privacy policy, the real ride-hailing data and proprietary system details (user, driver, and order identifiers, GPS traces, internal feature schemas, trained weights, service endpoints, and deployment scripts) cannot be released. Upon approval, the release will convey the method and interfaces only, with anonymized feature names. The published experimental results were produced on internal infrastructure that is not part of any code release.</div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
     <span class="fmark">ProfiLLM</span>
-    <p>Project page for the VLDB 2027 (Scalable Data Science) submission &middot; deployed at DiDi Chuxing.<br>
+    <p>Project page for the revised PVLDB (Scalable Data Science) submission &middot; deployed at DiDi Chuxing.<br>
     <a href="files/ProfiLLM_paper.pdf">Paper</a> &middot; <a href="appendix.html">Appendix</a> &middot; <a href="https://github.com/ProfiLLM/ProfiLLM">Code</a> &middot; <a href="#bibtex">BibTeX</a><br>
-    Last updated June 2026 &middot; Page content &copy; the authors.</p>
+    Last updated November 2026 &middot; Page content &copy; the authors.</p>
   </div>
 </footer>
 

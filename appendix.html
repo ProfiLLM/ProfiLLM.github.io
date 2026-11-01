@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Appendix &middot; ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch</title>
-<meta name="description" content="Full appendix (Sections A-Q) of the ProfiLLM paper (VLDB 2027, Scalable Data Science): behavioral heterogeneity, simulator architecture, sensitivity studies, cost and complexity analysis, privacy and fairness, and prompt templates.">
+<title>Online Appendix &middot; ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch</title>
+<meta name="description" content="Online appendix of the revised ProfiLLM paper (PVLDB, Scalable Data Science track): behavioral heterogeneity, the 27 analytical operators and a mining trace, algorithms, prompts, profile examples, the lambda study, the simulator protocol, profile granularity, cost and complexity, and privacy and fairness.">
 <link rel="canonical" href="https://profillm.github.io/appendix.html">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ProfiLLM &mdash; Online Appendix (A&ndash;Q)">
-<meta property="og:description" content="Full appendix of the ProfiLLM VLDB 2027 (Scalable Data Science) paper, rendered for convenient review.">
+<meta property="og:title" content="ProfiLLM &mdash; Online Appendix (revised version)">
+<meta property="og:description" content="Online appendix of the revised ProfiLLM paper (PVLDB, Scalable Data Science track), rendered for convenient review.">
 <meta property="og:image" content="https://profillm.github.io/static/images/framework.png">
 <meta property="og:url" content="https://profillm.github.io/appendix.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128661;</text></svg>">
@@ -267,7 +267,24 @@
   ol.algolines .tail{float:right;color:var(--faint-txt);font-size:12px;font-style:italic}
 </style>
 
-
+<style>
+  /* ---------- revised appendix: text tables, profile cards ---------- */
+  table.dt.txt td{white-space:normal;text-align:left;vertical-align:top;line-height:1.5}
+  table.dt.txt th{text-align:left}
+  table.dt.txt td:first-child{position:static;box-shadow:none}
+  table.dt.txt code{font-family:var(--mono);font-size:12px}
+  table.dt td.c,table.dt th.c{text-align:center}
+  table.dt td.mono{font-family:var(--mono);font-size:11.5px;white-space:normal;text-align:left;color:var(--muted-2);min-width:300px}
+  table.dt td.ahead{color:var(--accent)}
+  .tw .tnote{font-size:12.5px;color:var(--muted-2);margin:var(--s2) 2px 4px;line-height:1.5}
+  .profcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin:var(--s4) 0}
+  .profcard{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);box-shadow:var(--sh-sm);padding:15px 17px;font-size:13.5px;line-height:1.6;color:var(--muted-2)}
+  .profcard h4{margin:0 0 8px;font-family:var(--serif);font-size:15px;color:var(--ink)}
+  .profcard p{margin:0 0 9px}
+  .profcard code{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+  .profcard .logic{display:block;font-family:var(--mono);font-size:11.5px;background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:8px 10px;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+  .revnote{margin:22px 0 0}
+</style>
 </head>
 <body>
 
@@ -286,9 +303,9 @@
 
 <header id="top" class="apxhead">
   <div class="wrap">
-    <span class="venue">VLDB 2027 &middot; Scalable Data Science &middot; Online Appendix</span>
-    <h1>ProfiLLM &mdash; Full Appendix (A&ndash;Q)</h1>
-    <p class="sub">The complete appendix of <em>&ldquo;ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch&rdquo;</em>, rendered for convenient review. Section letters and all figure, table, equation, and algorithm numbers match the paper. A typeset version is available as a <a href="files/ProfiLLM_appendix.pdf" target="_blank" rel="noopener">PDF</a>.</p>
+    <span class="venue">PVLDB &middot; Scalable Data Science &middot; Online Appendix</span>
+    <h1>ProfiLLM &mdash; Online Appendix</h1>
+    <p class="sub">Supplement to <em>&ldquo;ProfiLLM: Utility-Aligned Agentic User Profiling for Industrial Ride-Hailing Dispatch&rdquo;</em> (PVLDB submission #1392, revised version), rendered for convenient review. Section, table (A1&ndash;A6), figure (A1&ndash;A7), and algorithm numbers match the typeset <a href="files/ProfiLLM_appendix.pdf" target="_blank" rel="noopener">PDF</a>; plain references such as &ldquo;Table&nbsp;1&rdquo; or &ldquo;Sec.&nbsp;4.5&rdquo; refer to the revised <a href="files/ProfiLLM_paper.pdf" target="_blank" rel="noopener">paper</a>.</p>
   </div>
 </header>
 
@@ -296,384 +313,178 @@
   <aside class="apxtoc" aria-label="Appendix table of contents">
     <p class="toctitle">Contents</p>
     <nav>
-      <a href="#heterogeneity"><span class="tag">A</span>Behavioral Heterogeneity</a>
-      <a href="#case-studies"><span class="tag">B</span>Case Studies</a>
-      <a href="#background"><span class="tag">C</span>Background</a>
-      <a href="#tools"><span class="tag">D</span>Analytical Tools</a>
-      <a href="#algorithms"><span class="tag">E</span>Algorithm Pseudocode</a>
-      <a href="#archetypes"><span class="tag">F</span>Cluster Archetypes</a>
-      <a class="sub" href="#cluster-viz">F.1&ensp;Embedding Visualization</a>
-      <a href="#simulator"><span class="tag">G</span>Simulator Architecture</a>
-      <a href="#wait-time"><span class="tag">H</span>Wait-Time Analysis</a>
-      <a href="#hourly"><span class="tag">I</span>Hourly Performance</a>
-      <a href="#cluster-sensitivity"><span class="tag">J</span>Cluster-Count Sensitivity</a>
-      <a href="#lambda"><span class="tag">K</span>λ Sensitivity</a>
-      <a href="#dpo-vs-exploration"><span class="tag">L</span>DPO vs. Exploration</a>
-      <a href="#offline-cost"><span class="tag">M</span>Offline System Cost</a>
-      <a href="#complexity"><span class="tag">N</span>Complexity Analysis</a>
-      <a href="#extended-ab"><span class="tag">O</span>Extended 14-day A/B</a>
-      <a href="#privacy-fairness"><span class="tag">P</span>Privacy & Fairness</a>
-      <a href="#prompts"><span class="tag">Q</span>Prompt Templates</a>
+      <a href="#heterogeneity"><span class="tag">1</span>Behavioral Heterogeneity</a>
+      <a href="#tools"><span class="tag">2</span>The 27 Operators</a>
+      <a href="#algorithms"><span class="tag">3</span>Algorithms</a>
+      <a href="#prompts"><span class="tag">4</span>Prompts</a>
+      <a href="#profile-examples"><span class="tag">5</span>Profile Examples</a>
+      <a href="#lambda"><span class="tag">6</span>Blending Coefficient &lambda;</a>
+      <a href="#implementation"><span class="tag">7</span>Implementation Details</a>
+      <a href="#simulator"><span class="tag">8</span>Dispatching Simulator</a>
+      <a href="#granularity"><span class="tag">9</span>Profile Granularity</a>
+      <a href="#cost"><span class="tag">10</span>Cost and Complexity</a>
+      <a href="#privacy-fairness"><span class="tag">11</span>Privacy &amp; Fairness</a>
     </nav>
   </aside>
   <main class="apxmain">
   <div class="chips" aria-label="Appendix sections">
-    <a href="#heterogeneity"><span class="tag">A</span>Behavioral Heterogeneity</a>
-    <a href="#case-studies"><span class="tag">B</span>Case Studies</a>
-    <a href="#background"><span class="tag">C</span>Background</a>
-    <a href="#tools"><span class="tag">D</span>Analytical Tools</a>
-    <a href="#algorithms"><span class="tag">E</span>Algorithm Pseudocode</a>
-    <a href="#archetypes"><span class="tag">F</span>Cluster Archetypes</a>
-    <a href="#simulator"><span class="tag">G</span>Simulator Architecture</a>
-    <a href="#wait-time"><span class="tag">H</span>Wait-Time Analysis</a>
-    <a href="#hourly"><span class="tag">I</span>Hourly Performance</a>
-    <a href="#cluster-sensitivity"><span class="tag">J</span>Cluster-Count Sensitivity</a>
-    <a href="#lambda"><span class="tag">K</span>λ Sensitivity</a>
-    <a href="#dpo-vs-exploration"><span class="tag">L</span>DPO vs. Exploration</a>
-    <a href="#offline-cost"><span class="tag">M</span>Offline System Cost</a>
-    <a href="#complexity"><span class="tag">N</span>Complexity Analysis</a>
-    <a href="#extended-ab"><span class="tag">O</span>Extended 14-day A/B</a>
-    <a href="#privacy-fairness"><span class="tag">P</span>Privacy & Fairness</a>
-    <a href="#prompts"><span class="tag">Q</span>Prompt Templates</a>
+    <a href="#heterogeneity"><span class="tag">1</span>Behavioral Heterogeneity</a>
+    <a href="#tools"><span class="tag">2</span>The 27 Operators</a>
+    <a href="#algorithms"><span class="tag">3</span>Algorithms</a>
+    <a href="#prompts"><span class="tag">4</span>Prompts</a>
+    <a href="#profile-examples"><span class="tag">5</span>Profile Examples</a>
+    <a href="#lambda"><span class="tag">6</span>Blending Coefficient &lambda;</a>
+    <a href="#implementation"><span class="tag">7</span>Implementation Details</a>
+    <a href="#simulator"><span class="tag">8</span>Dispatching Simulator</a>
+    <a href="#granularity"><span class="tag">9</span>Profile Granularity</a>
+    <a href="#cost"><span class="tag">10</span>Cost and Complexity</a>
+    <a href="#privacy-fairness"><span class="tag">11</span>Privacy &amp; Fairness</a>
   </div>
+
+<p class="find revnote">This appendix collects material that the revised paper refers to but that does not fit within the 8-page limit. All numbers are computed from our experiment and production logs.</p>
+
 <section class="apx" id="heterogeneity">
-  <h2><span class="tag">A</span>Empirical Motivation: User Behavioral Heterogeneity<a class="permalink" href="#heterogeneity" aria-label="Permalink to Appendix A">#</a></h2>
-<p class="find">This appendix supplements Section 1 of the paper by quantifying <em>how much</em> of order-outcome variance is governed by stable user-level traits that are invisible to structured per-order features, motivating profiling as a complementary information source. All analyses use 38 days of City&nbsp;A production logs (44.3M dispatching records, 333,166 passengers, 12,128 active drivers).</p>
-<p class="find"><b>Structured features leave large unexplained behavioral variance.</b> We partition grabbed orders into 100 buckets defined by (fee quintile &times; ETA quintile &times; time-of-day), so orders within a bucket share nearly identical structured features. Within these matched buckets the PCR still varies substantially across users: the average within-bucket standard deviation is <b>24.9%</b>, and the P90&ndash;P10 spread reaches <b>37.1 percentage points</b>. A variance-component (ICC) analysis on the 31,160 passengers with \( \ge 20 \) orders attributes <b>15.8%</b> of PCR variance to passenger identity alone: a stable, systematic signal that per-order features cannot expose.</p>
-<p class="find"><b>Driver and passenger decile gaps under matched contexts.</b> Figure 7 reports complementary cuts of the data. Panel&nbsp;(a) compares the most- vs. least-cancellation-prone passengers among those with \( \ge 5 \) grabbed orders: despite virtually identical average order fee (19.8 vs. 19.0) and ETA (293s vs. 292s), the former's PCR reaches 32.6% while the latter's is 0.0%, a 32.6&nbsp;p.p. gap. Panel&nbsp;(b) plots DAR percentiles across the 12,128 active drivers; the P90/P10 ratio is \( \mathbf{8.2\times} \) with \( \sigma = 12.2\% \), far beyond what order-level features can account for. Panel&nbsp;(c) shows that driver cancellation behavior is similarly bimodal: top-decile DCR (38.1%) is \( \mathbf{10.8\times} \) the bottom decile (3.5%) under matched order conditions. Panel&nbsp;(d) quantifies the same effect at dispatching-round granularity: in 16.3% of 11.8M dispatching rounds (1.93M rounds) the same broadcasted order receives mixed outcomes from different drivers (some accept, others reject), and in an extreme case nearly all drivers who received a single broadcast order declined it. These patterns are stable individual traits that profiling is designed to capture.</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/heterogeneity.png" alt="A four-panel figure documenting user-level behavioral heterogeneity that structured features cannot capture: (a) top- vs. bottom-decile passenger cancellation rates under matched fee and ETA; (b) driver acceptance rate percentiles with an 8.2-times P90 over P10 spread; (c) top- vs. bottom-decile driver cancellation rates under matched conditions; (d) fraction of dispatching rounds in which different drivers reach divergent accept-or-reject decisions on the same broadcasted order.">
-<figcaption><b>Figure 7:</b> Behavioral heterogeneity invisible to structured features. (a) Passenger PCR decile gap under matched fee/ETA. (b) Driver DAR percentiles. (c) Driver DCR decile gap under matched conditions. (d) Share of dispatching rounds in which the same broadcasted order receives divergent accept/reject decisions from different drivers. <a class="pdflink" href="static/pdfs/figs/heterogeneity.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-<p class="find"><b>Heterogeneity is largely orthogonal to order-level features.</b> Beyond decile-level summaries, we observe systematic individual preferences such as ETA-sensitivity heterogeneity (9.0% of 42,865 multi-ETA passengers exhibit \( \gt 30 \) p.p. PCR swings across ETA bins; one passenger with 50 orders has 0% PCR at ETA 4&ndash;6&nbsp;min but 100% at ETA \( \gt 8 \)&nbsp;min) and driver price-tier selectivity (11.3% of 10,687 multi-tier drivers show \( \ge 20 \) p.p. DAR gap between high- and low-price tiers, with a smaller 7.1% group exhibiting the opposite preference). The pilot study in Section 1 of the paper confirms that LLM-generated profiles convert these heterogeneity signals into 3.71% and 9.64% relative AUC gains on driver and passenger cancellation respectively, on top of a mature structured-feature predictor. Together, these analyses establish that user-side variance is large, systematic, and complementary to per-order features, precisely the gap ProfiLLM is designed to close.</p>
-<p class="find"><b>Long-tail prevalence amplifies the need for clustering.</b> Of the 333,166 unique passengers in the analysis window, <b>44.9%</b> appear in \( \le 3 \) orders and <b>59.3%</b> in \( \le 5 \) orders (consistent with Figure 2 of the paper). For these users no individual-level behavioral signal can be reliably estimated, motivating ProfiLLM's adaptive cluster-level profiling that transfers knowledge from data-rich groups to data-sparse individuals.</p>
-</section>
-
-<section class="apx" id="case-studies">
-  <h2><span class="tag">B</span>Representative Case Studies<a class="permalink" href="#case-studies" aria-label="Permalink to Appendix B">#</a></h2>
-<p class="find">To illustrate the kind of behavioral heterogeneity that ProfiLLM's profile embeddings are designed to capture, we walk through two representative cases drawn from City&nbsp;A production logs.</p>
-<p class="find"><b>Driver case: divergent acceptance under nearly identical order context.</b> In a representative dispatching round, a single order with a mid-tier fare and a pickup ETA of roughly six minutes during the evening peak, with origin and destination both in the city center, was broadcast to about twenty drivers; only one accepted while the rest declined. The accepting driver had a lower baseline acceptance rate than several of the drivers who declined, so a predictor relying purely on order-side and aggregate driver-side structured statistics would have ranked a declining driver <em>higher</em>. Across the full log, <b>16.3%</b> of dispatching rounds (1.93&nbsp;M of 11.8&nbsp;M batches) exhibit such mixed-outcome broadcasts where the same order receives divergent accept/reject decisions from different drivers under near-identical order-side context (<a href="#heterogeneity">Appendix A</a>). ProfiLLM's cluster-level driver profile encodes precisely this kind of identity-driven pattern, e.g., the accepting driver's cluster is characterized by a willingness to take evening city-center orders with mid-tier fares, while the rejecting drivers' clusters are not.</p>
-<p class="find"><b>Passenger case: ETA-sensitivity stratification under matched fare.</b> The most cancellation-prone passengers in City&nbsp;A (18,394 passengers, average PCR 32.6%) book at average fare $19.8 and ETA 293&nbsp;s; a comparison group of 97,579 passengers exhibits PCR 0.0% under almost identical conditions (fare $19.0, ETA 292&nbsp;s). As an illustrative pattern, some passengers tolerate short waits yet cancel almost all orders once the pickup ETA exceeds a personal threshold, for instance with cancellation rising from near 0% below roughly six minutes to near 100% beyond eight minutes, while the platform average rises only from 6.9% to 11.3% across the same ETA band. This per-passenger ETA-tolerance threshold is invisible to structured features that report only the absolute ETA value; ProfiLLM's cluster-level passenger profile materializes such latent tolerance patterns as part of the cluster's PROFILE narrative (e.g., &ldquo;commute-hour passengers who tolerate \( \le 6 \)&nbsp;min wait but defect at longer ETAs&rdquo;), feeding the prediction model a discriminative signal the structured-feature baseline cannot express.</p>
-</section>
-
-<section class="apx" id="background">
-  <h2><span class="tag">C</span>Background<a class="permalink" href="#background" aria-label="Permalink to Appendix C">#</a></h2>
-<p class="find"><b>Tool-Augmented LLM Agents.</b> Recent advances have demonstrated that LLMs can effectively leverage external tools to accomplish complex tasks beyond their inherent capabilities [Yao et al., 2022; Qin et al., 2024; Huang et al., 2025; Wang et al., 2024; Ning et al., 2025]. A tool-augmented LLM agent operates by iteratively generating reasoning traces and invoking tools based on intermediate observations. Formally, given an input query \(q\) and a tool set \(\mathcal{T} = \{t_1, \ldots, t_{|\mathcal{T}|}\}\), the agent produces a trajectory \(\tau = \{(a_i, r_i)\}_{i=1}^{L}\), where \(a_i\) denotes an action (either reasoning or tool invocation) and \(r_i\) denotes the corresponding observation or tool result. This paradigm enables LLMs to analyze data at scales far exceeding their context window limitations.</p>
-<p class="find"><b>Direct Preference Optimization (DPO).</b> DPO [Rafailov et al., 2023] provides an efficient approach to align LLM outputs with human preferences without explicit reward modeling. Given preference pairs \((x, y_w, y_l)\) where \(y_w\) is preferred over \(y_l\) for input \(x\), DPO directly optimizes the policy \(\pi_\theta\) via:</p>
-<p class="find">\[ \mathcal{L}_{\text{DPO}} = -\mathbb{E}_{(x, y_w, y_l)} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right] \tag{7} \]</p>
-<p class="find">where \(\pi_{\text{ref}}\) is a reference policy (typically the supervised fine-tuned model), \(\beta\) controls the deviation from the reference, and \(\sigma(\cdot)\) is the sigmoid function. In our context, we extend DPO to align profile generation with downstream prediction utility.</p>
+  <h2><span class="tag">1</span>User Behavioral Heterogeneity<a class="permalink" href="#heterogeneity" aria-label="Permalink to Section 1">#</a></h2>
+<p class="find">All analyses use 38 days of City&nbsp;A production logs (44.3M dispatching records; 333,166 passengers with at least one order; 12,128 drivers with at least ten broadcasts).</p>
+<p class="find"><b>Long tail.</b> Of the 333,166 passengers, 20.5% appear in exactly one order, 44.9% in at most three, and 59.3% in at most five; the median passenger has four orders, and 96% have at most 30 (Figure&nbsp;A1). Drivers are more active, but every match involves a passenger.</p>
+<figure id="fig-a1"><img class="zoom" loading="lazy" decoding="async" src="static/images/longtail.png" alt="Histogram of historical order counts per user over 38 days in City A, showing a heavy long tail.">
+<figcaption><b>Figure A1:</b> Distribution of historical order counts over 38 days in City&nbsp;A. <a class="pdflink" href="static/pdfs/figs/longtail.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+<p class="find"><b>Structured features leave large unexplained behavioral variance.</b> We partition grabbed orders into 100 buckets defined by fee quintile &times; ETA quintile &times; time of day, so that orders within a bucket share nearly identical structured features. Within these buckets, the passenger post-acceptance cancellation rate (PCR) still varies widely across passengers: the average within-bucket standard deviation is 24.9 percentage points, and the P90&ndash;P10 spread is 37.1 points. A variance-component (ICC) analysis over the 31,160 passengers with at least 20 orders attributes 15.8% of PCR variance to passenger identity alone, whereas about 3% would be expected by chance with these group sizes.</p>
+<p class="find"><b>Decile gaps under matched contexts.</b> Figure&nbsp;A2(a) compares the most and least cancellation-prone passengers among those with at least five grabbed orders: despite nearly identical average fee (19.8 vs. 19.0 BRL) and ETA (293&nbsp;s vs. 292&nbsp;s), their PCRs are 32.6% and 0.0%. Panel&nbsp;(b) shows driver acceptance-rate percentiles (P90/P10 \(=8.2\times\), \(\sigma=12.2\%\)). Panel&nbsp;(c) shows that the top-decile driver cancellation rate (38.1%) is \(10.8\times\) the bottom decile (3.5%) under matched order conditions. Panel&nbsp;(d): in 16.3% of 11.8M dispatching rounds, the same broadcast order receives mixed accept/reject decisions from different drivers. Beyond deciles, 9.0% of 42,865 multi-ETA passengers show PCR swings of more than 30 points across ETA bins, and 11.3% of 10,687 multi-tier drivers show an acceptance gap of at least 20 points between high- and low-price orders (7.1% the opposite preference). Because each OD pair has its own driver-side features, panel&nbsp;(d) is descriptive rather than causal evidence.</p>
+<figure id="fig-a2"><img class="zoom" loading="lazy" decoding="async" src="static/images/heterogeneity.png" alt="Four-panel figure: (a) passenger cancellation decile gap under matched fee and ETA; (b) driver acceptance-rate percentiles; (c) driver cancellation decile gap; (d) share of dispatching rounds with mixed accept or reject decisions for the same broadcast order.">
+<figcaption><b>Figure A2:</b> Behavioral heterogeneity under matched structured features. (a) Passenger PCR decile gap under matched fee and ETA. (b) Driver acceptance-rate percentiles. (c) Driver cancellation decile gap. (d) Share of dispatching rounds with mixed accept/reject decisions for the same broadcast order. <a class="pdflink" href="static/pdfs/figs/heterogeneity.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
 </section>
 
 <section class="apx" id="tools">
-  <h2><span class="tag">D</span>Analytical Tool Details<a class="permalink" href="#tools" aria-label="Permalink to Appendix D">#</a></h2>
-<p class="find">Table 4 presents the complete categorization of the 27 analytical tools used in the Tool-Augmented Global Knowledge Mining module. These tools are organized into six categories based on their analytical functionality: (1) <b>Statistical</b> tools for computing aggregate statistics, comparing segments, clustering users, and identifying important features; (2) <b>Causal</b> tools for discovering causal relationships, performing counterfactual analysis, and conducting multi-stage iterative mining with uncertainty quantification; (3) <b>Knowledge</b> tools for extracting global causal rules, generating classification benchmarks, and constructing profile knowledge bases; (4) <b>Validation</b> tools for verifying discovered patterns and cross-validating conclusions; (5) <b>Spatiotemporal</b> tools for detecting peak periods, analyzing day-of-week and hourly patterns, identifying spatial hotspots, and examining origin-destination flows; and (6) <b>Contextual</b> tools for analyzing supply-demand balance, wait time factors, matching efficiency, anomalies, special periods, and weather impacts. All tools are designed to accept structured parameters and return interpretable results that the LLM agent can reason over, enabling composable tool chains for complex analytical queries.</p>
-<p class="tablecap"><b>Table 4:</b> Categorization of analytical tools in ProfiLLM.</p>
-<div class="tw"><table class="dt" id="ttools">
-<thead><tr><th style="text-align:left">Tool</th><th style="text-align:left">Description</th></tr></thead>
+  <h2><span class="tag">2</span>The 27 Analytical Operators<a class="permalink" href="#tools" aria-label="Permalink to Section 2">#</a></h2>
+<p class="find">Table&nbsp;A1 lists every operator with its assigned phase, its description (as exposed to the agent), and its parameters. The phase-enforcement engine steers the agent through Explore, Deepen, Validate, and Synthesize with per-phase step budgets of 5/8/5/3 agent steps; a phase cannot end before its required operators (*) have been called. The engine is lenient: it allows operators of the current and earlier phases and only warns when the agent calls an operator assigned to a later phase.</p>
+<p class="tablecap" id="table-a1"><b>Table A1:</b> Specification of the 27 analytical operators (*: required in its phase; &deg;: optional parameter). All operators execute SQL and statistical routines over a DuckDB table and return aggregated JSON.</p>
+<div class="tw"><table class="dt txt" id="ttools">
+<thead><tr><th>Operator</th><th>Description</th><th>Parameters</th></tr></thead>
 <tbody>
-<tr class="grp"><td colspan="2">Statistical (4)</td></tr>
-<tr><td style="text-align:left"><code>AggregateStats</code></td><td style="text-align:left">Calculate aggregate statistics by dimension</td></tr>
-<tr><td style="text-align:left"><code>CompareSegments</code></td><td style="text-align:left">Compare segments on specific metrics</td></tr>
-<tr><td style="text-align:left"><code>UserClustering</code></td><td style="text-align:left">K-Means clustering on user behavior</td></tr>
-<tr><td style="text-align:left"><code>FeatureImportance</code></td><td style="text-align:left">Analyze key features for target metric</td></tr>
-<tr class="grp"><td colspan="2">Causal (5)</td></tr>
-<tr><td style="text-align:left"><code>CausalDiscovery</code></td><td style="text-align:left">Discover causal relationships</td></tr>
-<tr><td style="text-align:left"><code>CounterfactualAnalysis</code></td><td style="text-align:left">Perform &ldquo;what if&rdquo; analysis</td></tr>
-<tr><td style="text-align:left"><code>ChainOfMining</code></td><td style="text-align:left">Multi-stage iterative analysis</td></tr>
-<tr><td style="text-align:left"><code>UncertaintyAwareMining</code></td><td style="text-align:left">Provide confidence intervals</td></tr>
-<tr><td style="text-align:left"><code>ContrastiveAnalysis</code></td><td style="text-align:left">Compare similar groups for differences</td></tr>
-<tr class="grp"><td colspan="2">Knowledge (3)</td></tr>
-<tr><td style="text-align:left"><code>GlobalCausalRules</code></td><td style="text-align:left">Discover global causal rules</td></tr>
-<tr><td style="text-align:left"><code>GlobalBenchmarks</code></td><td style="text-align:left">Generate benchmarks for classification</td></tr>
-<tr><td style="text-align:left"><code>ProfileKnowledgeBase</code></td><td style="text-align:left">Generate profile usage guide</td></tr>
-<tr class="grp"><td colspan="2">Validation (2)</td></tr>
-<tr><td style="text-align:left"><code>ValidationDiscovery</code></td><td style="text-align:left">Validate discovered patterns</td></tr>
-<tr><td style="text-align:left"><code>ConclusionValidation</code></td><td style="text-align:left">Cross-validate conclusions</td></tr>
-<tr class="grp"><td colspan="2">Spatio-temporal (6)</td></tr>
-<tr><td style="text-align:left"><code>DetectPeakPeriods</code></td><td style="text-align:left">Detect peak periods for metrics</td></tr>
-<tr><td style="text-align:left"><code>DayOfWeekPattern</code></td><td style="text-align:left">Analyze weekday vs weekend patterns</td></tr>
-<tr><td style="text-align:left"><code>HourlyPattern</code></td><td style="text-align:left">Analyze 24-hour detailed patterns</td></tr>
-<tr><td style="text-align:left"><code>SpatialHotspot</code></td><td style="text-align:left">Identify spatial distribution hotspots</td></tr>
-<tr><td style="text-align:left"><code>ODFlowAnalysis</code></td><td style="text-align:left">Analyze origin-destination flow patterns</td></tr>
-<tr><td style="text-align:left"><code>RegionCharacteristics</code></td><td style="text-align:left">Analyze regional characteristic profiles</td></tr>
-<tr class="grp"><td colspan="2">Contextual (7)</td></tr>
-<tr><td style="text-align:left"><code>SupplyDemandAnalysis</code></td><td style="text-align:left">Analyze supply-demand balance</td></tr>
-<tr><td style="text-align:left"><code>WaitTimeFactors</code></td><td style="text-align:left">Analyze factors affecting wait time</td></tr>
-<tr><td style="text-align:left"><code>MatchingEfficiency</code></td><td style="text-align:left">Analyze order matching efficiency</td></tr>
-<tr><td style="text-align:left"><code>DetectAnomalies</code></td><td style="text-align:left">Detect anomalies in metrics</td></tr>
-<tr><td style="text-align:left"><code>SpecialPeriodAnalysis</code></td><td style="text-align:left">Analyze holiday/event patterns</td></tr>
-<tr><td style="text-align:left"><code>WeatherFactorAnalysis</code></td><td style="text-align:left">Analyze weather impact on metrics</td></tr>
-<tr><td style="text-align:left"><code>WeatherScenario</code></td><td style="text-align:left">Analyze specific weather scenarios</td></tr>
+<tr class="grp"><td colspan="3">Explore (5)</td></tr>
+<tr><td><code>AggregateStats</code>*</td><td>Calculate aggregate statistics by specified dimension</td><td><code>dimension</code>, <code>metrics</code>, <code>filters</code>°, <code>top_k</code>°</td></tr>
+<tr><td><code>CompareSegments</code></td><td>Compare different segments on a specific metric</td><td><code>segment_field</code>, <code>metric</code>, <code>filters</code>°</td></tr>
+<tr><td><code>DetectPeakPeriods</code></td><td>Detect peak periods for order volume or other metrics</td><td><code>metric</code>°, <code>threshold_percentile</code>°</td></tr>
+<tr><td><code>DayOfWeekPattern</code></td><td>Analyze pattern differences between weekdays and weekends</td><td><code>metrics</code>°</td></tr>
+<tr><td><code>HourlyPattern</code></td><td>Analyze detailed patterns within 24 hours</td><td><code>metrics</code>°, <code>split_by_weekend</code>°</td></tr>
+<tr class="grp"><td colspan="3">Deepen (11)</td></tr>
+<tr><td><code>UserClustering</code>*</td><td>Cluster drivers or passengers around centroids of standardized behavior statistics and summarize each cluster</td><td><code>user_type</code>, <code>n_clusters</code>°, <code>sample_size</code>°</td></tr>
+<tr><td><code>WeatherFactorAnalysis</code>*</td><td>Analyze weather factor impact on order metrics</td><td><code>weather_factor</code>, <code>target_metric</code>°, <code>n_bins</code>°</td></tr>
+<tr><td><code>FeatureImportance</code></td><td>Analyze key features affecting a target metric</td><td><code>target</code>, <code>features</code>, <code>sample_size</code>°</td></tr>
+<tr><td><code>SpatialHotspot</code></td><td>Analyze spatial distribution hotspots of orders</td><td><code>metric</code>, <code>grid_field</code>°, <code>top_k</code>°, <code>time_filter</code>°</td></tr>
+<tr><td><code>ODFlowAnalysis</code></td><td>Analyze Origin-Destination (OD) flow patterns</td><td><code>top_k</code>°, <code>time_filter</code>°, <code>min_orders</code>°</td></tr>
+<tr><td><code>RegionCharacteristics</code></td><td>Analyze comprehensive characteristic profiles of different regions</td><td><code>grid_field</code>°, <code>top_k</code>°, <code>min_orders</code>°</td></tr>
+<tr><td><code>SupplyDemandAnalysis</code></td><td>Analyze supply-demand balance across different dimensions</td><td><code>dimension</code>, <code>granularity</code>°</td></tr>
+<tr><td><code>WaitTimeFactors</code></td><td>Analyze key factors affecting passenger wait time</td><td><code>target_metric</code>°, <code>sample_size</code>°</td></tr>
+<tr><td><code>MatchingEfficiency</code></td><td>Analyze order matching efficiency metrics</td><td><code>breakdown_by</code>°</td></tr>
+<tr><td><code>WeatherScenario</code></td><td>Analyze order characteristics under specific weather scenarios</td><td><code>scenario</code>, <code>compare_with_normal</code>°</td></tr>
+<tr><td><code>ContrastiveAnalysis</code></td><td>Discover differentiating features by comparing similar groups</td><td><code>target_segment</code>, <code>comparison_features</code>, <code>outcome_metric</code>°</td></tr>
+<tr class="grp"><td colspan="3">Validate (7)</td></tr>
+<tr><td><code>ChainOfMining</code></td><td>Discover deeper insights through multi-stage iterative analysis</td><td><code>target_metric</code>, <code>analysis_dimensions</code>, <code>user_type</code>°, <code>sample_size</code>°</td></tr>
+<tr><td><code>DetectAnomalies</code></td><td>Detect anomalies or abnormal periods in metrics</td><td><code>metric</code>, <code>dimension</code>°, <code>method</code>°, <code>threshold</code>°</td></tr>
+<tr><td><code>SpecialPeriodAnalysis</code></td><td>Analyze travel characteristics during special periods (holidays, events, etc.)</td><td><code>period_type</code>, <code>compare_with_normal</code>°</td></tr>
+<tr><td><code>CausalDiscovery</code></td><td>Discover causal relationship structures between variables</td><td><code>target</code>, <code>candidate_causes</code>, <code>sample_size</code>°, <code>significance_level</code>°</td></tr>
+<tr><td><code>CounterfactualAnalysis</code></td><td>Perform counterfactual analysis, answering "what if..." questions</td><td><code>intervention_var</code>, <code>outcome_var</code>, <code>intervention_type</code>, <code>user_type</code>°, <code>sample_size</code>°</td></tr>
+<tr><td><code>ValidationDiscovery</code></td><td>Validate discovered patterns and relationships between variables</td><td><code>target</code>, <code>variables</code>, <code>validation_methods</code>°, <code>sample_size</code>°</td></tr>
+<tr><td><code>ConclusionValidation</code></td><td>Validate conclusions from earlier analysis phases</td><td><code>claims</code>, <code>validation_methods</code>°, <code>sample_size</code>°</td></tr>
+<tr class="grp"><td colspan="3">Synthesize (3)</td></tr>
+<tr><td><code>GlobalCausalRules</code></td><td>Discover global causal rules, generate causal knowledge to guide profile descriptions</td><td><code>outcome_metrics</code>, <code>candidate_factors</code>, <code>sample_size</code>°</td></tr>
+<tr><td><code>GlobalBenchmarks</code></td><td>Generate global benchmarks for classifying users in profiles</td><td><code>metrics</code>, <code>user_type</code>°, <code>n_bootstrap</code>°</td></tr>
+<tr><td><code>ProfileKnowledgeBase</code>*</td><td>Generate usage guide and templates for the profile generation knowledge base</td><td><code>user_type</code></td></tr>
+<tr class="grp"><td colspan="3">Any phase (1)</td></tr>
+<tr><td><code>UncertaintyAwareMining</code></td><td>Provide confidence intervals for each insight</td><td><code>metric</code>, <code>group_by</code>, <code>n_bootstrap</code>°, <code>confidence_level</code>°</td></tr>
+</tbody>
+</table></div>
+<p class="find"><b>An example session.</b> Table&nbsp;A2 shows the complete trace of one mining session over the 36.8M City&nbsp;A records of November 2025 (Gemini-3-Pro, temperature 0.3). The agent issued 31 tool calls in seven turns, spent 50.0&nbsp;s in tool execution, and saved its report after 3.7 minutes. The two slowest calls are the user clustering of drivers and passengers (UserClustering). The trace also shows the lenient phase engine: several Validate and Synthesize operators were called ahead of their assigned phase (highlighted). The two other sessions issued 28 and 27 calls in 11 and 9 turns (4.3 and 3.4 minutes).</p>
+<p class="tablecap" id="table-a2"><b>Table A2:</b> Trace of mining session 20260128_105904 (City&nbsp;A, 36.8M records): agent phase when the call was issued, operator, its assigned phase, execution time, and parameters (abridged).</p>
+<div class="tw"><table class="dt" id="ttrace">
+<thead><tr><th>#</th><th class="c">Agent phase</th><th style="text-align:left">Operator</th><th class="c">Assigned</th><th>Time (s)</th><th style="text-align:left">Parameters</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="c">Explore</td><td style="text-align:left"><code>AggregateStats</code></td><td class="c">Explore</td><td>3.82</td><td class="mono">{'metrics': ['eta', 'pre_total_fee', 'trip_distance'], 'dimension':...</td></tr>
+<tr><td>2</td><td class="c">Explore</td><td style="text-align:left"><code>DetectPeakPeriods</code></td><td class="c">Explore</td><td>0.07</td><td class="mono">{'threshold_percentile': 75, 'metric': 'order_count'}</td></tr>
+<tr><td>3</td><td class="c">Explore</td><td style="text-align:left"><code>DayOfWeekPattern</code></td><td class="c">Explore</td><td>0.33</td><td class="mono">{'metrics': ['order_count', 'grab_rate', 'avg_fee', 'avg_eta']}</td></tr>
+<tr><td>4</td><td class="c">Explore</td><td style="text-align:left"><code>HourlyPattern</code></td><td class="c">Explore</td><td>0.25</td><td class="mono">{'metrics': ['order_count', 'grab_rate', 'avg_eta'], 'split_by_week...</td></tr>
+<tr><td>5</td><td class="c">Explore</td><td style="text-align:left"><code>CompareSegments</code></td><td class="c">Explore</td><td>0.16</td><td class="mono">{'segment_field': 'x_is_weekend', 'metric': 'grab_rate'}</td></tr>
+<tr><td>6</td><td class="c">Deepen</td><td style="text-align:left"><code>UserClustering</code></td><td class="c">Deepen</td><td>10.06</td><td class="mono">{'user_type': 'driver', 'n_clusters': 8}</td></tr>
+<tr><td>7</td><td class="c">Deepen</td><td style="text-align:left"><code>UserClustering</code></td><td class="c">Deepen</td><td>10.18</td><td class="mono">{'n_clusters': 8, 'user_type': 'passenger'}</td></tr>
+<tr><td>8</td><td class="c">Deepen</td><td style="text-align:left"><code>FeatureImportance</code></td><td class="c">Deepen</td><td>1.08</td><td class="mono">{'target': 'is_grabbed', 'features': ['pre_total_fee', 'trip_distan...</td></tr>
+<tr><td>9</td><td class="c">Deepen</td><td style="text-align:left"><code>SpatialHotspot</code></td><td class="c">Deepen</td><td>0.15</td><td class="mono">{'metric': 'order_density', 'top_k': 20}</td></tr>
+<tr><td>10</td><td class="c">Deepen</td><td style="text-align:left"><code>ODFlowAnalysis</code></td><td class="c">Deepen</td><td>1.44</td><td class="mono">{'top_k': 20}</td></tr>
+<tr><td>11</td><td class="c">Deepen</td><td style="text-align:left"><code>RegionCharacteristics</code></td><td class="c">Deepen</td><td>2.23</td><td class="mono">{'top_k': 20}</td></tr>
+<tr><td>12</td><td class="c">Deepen</td><td style="text-align:left"><code>SupplyDemandAnalysis</code></td><td class="c">Deepen</td><td>0.55</td><td class="mono">{'dimension': 'time'}</td></tr>
+<tr><td>13</td><td class="c">Deepen</td><td style="text-align:left"><code>SupplyDemandAnalysis</code></td><td class="c">Deepen</td><td>0.85</td><td class="mono">{'dimension': 'region'}</td></tr>
+<tr><td>14</td><td class="c">Deepen</td><td style="text-align:left"><code>WaitTimeFactors</code></td><td class="c">Deepen</td><td>1.69</td><td class="mono">{'target_metric': 'eta'}</td></tr>
+<tr><td>15</td><td class="c">Deepen</td><td style="text-align:left"><code>MatchingEfficiency</code></td><td class="c">Deepen</td><td>0.18</td><td class="mono">{'breakdown_by': 'hour'}</td></tr>
+<tr><td>16</td><td class="c">Deepen</td><td style="text-align:left"><code>CausalDiscovery</code></td><td class="c ahead">Validate</td><td>0.65</td><td class="mono">{'target': 'is_craa', 'candidate_causes': ['pre_total_fee', 'trip_d...</td></tr>
+<tr><td>17</td><td class="c">Deepen</td><td style="text-align:left"><code>CausalDiscovery</code></td><td class="c ahead">Validate</td><td>0.59</td><td class="mono">{'candidate_causes': ['eta', 'pre_total_fee', 'x_capital_hour', 'ho...</td></tr>
+<tr><td>18</td><td class="c">Deepen</td><td style="text-align:left"><code>CausalDiscovery</code></td><td class="c ahead">Validate</td><td>0.62</td><td class="mono">{'target': 'is_dcaa', 'candidate_causes': ['trip_distance', 'pre_to...</td></tr>
+<tr><td>19</td><td class="c">Deepen</td><td style="text-align:left"><code>CounterfactualAnalysis</code></td><td class="c ahead">Validate</td><td>0.60</td><td class="mono">{'user_type': 'passenger', 'outcome_var': 'is_pcaa', 'intervention_...</td></tr>
+<tr><td>20</td><td class="c">Deepen</td><td style="text-align:left"><code>ChainOfMining</code></td><td class="c ahead">Validate</td><td>2.19</td><td class="mono">{'target_metric': 'is_grabbed', 'analysis_dimensions': ['hour_perio...</td></tr>
+<tr><td>21</td><td class="c">Deepen</td><td style="text-align:left"><code>WeatherFactorAnalysis</code></td><td class="c">Deepen</td><td>0.83</td><td class="mono">{'target_metric': 'grab_rate', 'n_bins': 5, 'weather_factor': 'all'}</td></tr>
+<tr><td>22</td><td class="c">Deepen</td><td style="text-align:left"><code>WeatherScenario</code></td><td class="c">Deepen</td><td>0.64</td><td class="mono">{'compare_with_normal': True, 'scenario': 'rain'}</td></tr>
+<tr><td>23</td><td class="c">Deepen</td><td style="text-align:left"><code>WeatherScenario</code></td><td class="c">Deepen</td><td>0.45</td><td class="mono">{'scenario': 'hot', 'compare_with_normal': True}</td></tr>
+<tr><td>24</td><td class="c">Deepen</td><td style="text-align:left"><code>DetectAnomalies</code></td><td class="c ahead">Validate</td><td>0.05</td><td class="mono">{'metric': 'order_count', 'dimension': 'hour'}</td></tr>
+<tr><td>25</td><td class="c">Deepen</td><td style="text-align:left"><code>SpecialPeriodAnalysis</code></td><td class="c ahead">Validate</td><td>0.53</td><td class="mono">{'period_type': 'weekend', 'compare_with_normal': True}</td></tr>
+<tr><td>26</td><td class="c">Validate</td><td style="text-align:left"><code>ContrastiveAnalysis</code></td><td class="c">Deepen</td><td>0.45</td><td class="mono">{'comparison_features': ['pre_total_fee', 'trip_distance', 'eta', '...</td></tr>
+<tr><td>27</td><td class="c">Validate</td><td style="text-align:left"><code>GlobalCausalRules</code></td><td class="c ahead">Synthesize</td><td>4.87</td><td class="mono">{'candidate_factors': ['pre_total_fee', 'trip_distance', 'eta', 'x_...</td></tr>
+<tr><td>28</td><td class="c">Validate</td><td style="text-align:left"><code>GlobalBenchmarks</code></td><td class="c ahead">Synthesize</td><td>1.22</td><td class="mono">{'metrics': ['order_count', 'grab_rate', 'cancel_rate', 'avg_fee', ...</td></tr>
+<tr><td>29</td><td class="c">Validate</td><td style="text-align:left"><code>GlobalBenchmarks</code></td><td class="c ahead">Synthesize</td><td>3.32</td><td class="mono">{'user_type': 'passenger', 'metrics': ['order_count', 'success_rate...</td></tr>
+<tr><td>30</td><td class="c">Validate</td><td style="text-align:left"><code>ProfileKnowledgeBase</code></td><td class="c ahead">Synthesize</td><td>0.00</td><td class="mono">{'user_type': 'driver'}</td></tr>
+<tr><td>31</td><td class="c">Validate</td><td style="text-align:left"><code>ProfileKnowledgeBase</code></td><td class="c ahead">Synthesize</td><td>0.00</td><td class="mono">{'user_type': 'passenger'}</td></tr>
 </tbody>
 </table></div>
 </section>
 
 <section class="apx" id="algorithms">
-  <h2><span class="tag">E</span>Algorithm Pseudocode<a class="permalink" href="#algorithms" aria-label="Permalink to Appendix E">#</a></h2>
-<p class="find">This section provides the detailed pseudocode for the two core procedures in ProfiLLM.</p>
-<p class="find"><b>Algorithm 1</b> formalizes the Tool-Augmented Global Knowledge Mining workflow described in Section 3.2 of the paper. The procedure follows the four-phase Explore-Deepen-Validate-Synthesize paradigm. In the Explore phase, the agent invokes basic statistical tools to obtain an initial understanding of the data landscape. The Deepen phase identifies promising analytical directions from preliminary findings and applies targeted tool chains for focused investigation. The Validate phase subjects each discovered pattern to statistical hypothesis testing, retaining only findings with \(p\)-value below threshold \(\alpha\) and effect size exceeding \(\epsilon\). Finally, the Synthesize phase consolidates validated findings into three structured outputs: global knowledge \(\mathcal{K}\), user clustering rules \(\mathcal{A}\), and regional supply-demand priors \(\mathcal{R}\).</p>
-<div class="algocard">
+  <h2><span class="tag">3</span>Algorithms<a class="permalink" href="#algorithms" aria-label="Permalink to Section 3">#</a></h2>
+<p class="find">Algorithm&nbsp;1 summarizes the knowledge-mining workflow, and Algorithm&nbsp;2 the exploration procedure as implemented. Exploration follows a greedy tree search: after \(K\) drafts, each step either refines the current best candidate with feedback on its LOGIC errors or, with probability 0.25, repairs a candidate whose LOGIC failed to execute. Every candidate is scored on the selection split with its own \(\lambda\) (Sec.&nbsp;3.3.3 of the paper). Per cluster, the selection split consists of the most recent labeled records (5 ignored, 3 cancelled, and 8 completed for drivers; 2 cancelled and 8 completed for passengers) plus a random half of the records left after reserving up to 20 per outcome for the context split; the context split keeps at most 40 records per outcome, of which the prompt shows the ten most recent. A cluster with fewer labeled records than the selection split requires receives no profile (Sec.&nbsp;3.3.1 of the paper).</p>
+<div class="algocard" id="alg-1">
   <div class="algohead"><span class="an">Algorithm 1:</span> Tool-Augmented Global Knowledge Mining</div>
   <div class="algoios">
     <b>Require:</b> Historical data \(\mathcal{H}\), tool set \(\mathcal{T}\), LLM agent \(\mathcal{M}\)<br>
-    <b>Ensure:</b> Global knowledge \(\mathcal{K}\), clustering rules \(\mathcal{A}\), regional priors \(\mathcal{R}\)
+    <b>Ensure:</b> Global knowledge \(\mathcal{K}\), user clustering \(\mathcal{A}\), regional priors \(\mathcal{R}\)
   </div>
   <ol class="algolines">
-    <li><span class="cm">// Phase 1: Explore</span></li>
-    <li>\(\textit{findings}_1 \gets \emptyset\)</li>
-    <li><b>for</b> \(t \in \mathcal{T}_{\textit{basic}}\) <b>do</b></li>
-    <li class="i1">\(\textit{result} \gets t.\text{execute}(\mathcal{H})\)</li>
-    <li class="i1">\(\textit{findings}_1 \gets \textit{findings}_1 \cup \mathcal{M}.\text{interpret}(\textit{result})\)</li>
+    <li><b>for</b> phase \(\in\) (Explore, Deepen, Validate, Synthesize) <b>do</b></li>
+    <li class="i1"><b>while</b> phase step budget not exhausted <b>and</b> \(\mathcal{M}\) does not end the phase <b>do</b></li>
+    <li class="i2"><span class="tail">&#9655; one or more tool calls</span>\(\textit{calls} \gets \mathcal{M}.\text{plan}(\textit{findings}, \text{phase})\)</li>
+    <li class="i2">\(\textit{findings} \gets \textit{findings} \cup \{t.\text{execute}(\mathcal{H}) : t \in \textit{calls}\}\)</li>
+    <li class="i1"><b>end while</b></li>
+    <li class="i1">enforce the phase&rsquo;s required tools before moving on</li>
     <li><b>end for</b></li>
-    <li><span class="cm">// Phase 2: Deepen</span></li>
-    <li>\(\textit{directions} \gets \mathcal{M}.\text{identify\_directions}(\textit{findings}_1)\)</li>
-    <li>\(\textit{findings}_2 \gets \emptyset\)</li>
-    <li><b>for</b> \(\textit{dir} \in \textit{directions}\) <b>do</b></li>
-    <li class="i1">\(\textit{tools} \gets \mathcal{M}.\text{select\_tools}(\textit{dir}, \mathcal{T})\)</li>
-    <li class="i1">\(\textit{result} \gets \text{ExecuteToolChain}(\textit{tools}, \mathcal{H})\)</li>
-    <li class="i1">\(\textit{findings}_2 \gets \textit{findings}_2 \cup \mathcal{M}.\text{analyze}(\textit{result})\)</li>
-    <li><b>end for</b></li>
-    <li><span class="cm">// Phase 3: Validate</span></li>
-    <li>\(\textit{candidates} \gets \mathcal{M}.\text{extract\_hypotheses}(\textit{findings}_1 \cup \textit{findings}_2)\)</li>
-    <li>\(\textit{validated} \gets \emptyset\)</li>
-    <li><b>for</b> \(\textit{hyp} \in \textit{candidates}\) <b>do</b></li>
-    <li class="i1">\(\textit{pval}, \textit{eff} \gets \texttt{validate\_hypothesis}(\textit{hyp}, \mathcal{H})\)</li>
-    <li class="i1"><b>if</b> \(\textit{pval} \lt \alpha\) <b>and</b> \(|\textit{eff}| \gt \epsilon\) <b>then</b></li>
-    <li class="i2">\(\textit{validated} \gets \textit{validated} \cup \{(\textit{hyp}, \textit{eff})\}\)</li>
-    <li class="i1"><b>end if</b></li>
-    <li><b>end for</b></li>
-    <li><span class="cm">// Phase 4: Synthesize</span></li>
-    <li>\(\mathcal{K} \gets \mathcal{M}.\text{synthesize\_knowledge}(\textit{validated})\)</li>
-    <li>\(\mathcal{A} \gets \mathcal{M}.\text{generate\_clustering\_rules}(\textit{findings}_2)\)</li>
-    <li>\(\mathcal{R} \gets \texttt{compute\_regional\_priors}(\mathcal{H}, \mathcal{G})\)</li>
+    <li>Validate: keep hypotheses with \(p&lt;\alpha\) and \(|\textit{effect}|&gt;\epsilon\)</li>
+    <li>\(\mathcal{K} \gets \mathcal{M}.\text{synthesize}(\textit{validated findings})\); \(\mathcal{A} \gets\) centroid-based clustering and cluster signatures; \(\mathcal{R} \gets\) grid \(\times\) slot statistics</li>
     <li><b>return</b> \(\mathcal{K}, \mathcal{A}, \mathcal{R}\)</li>
   </ol>
 </div>
-<p class="find"><b>Algorithm 2</b> details the DPO-Aligned Profile Exploration procedure described in Section 3.3 of the paper. Given a user cluster \(a\) with its aggregated history and the global knowledge base, the algorithm first generates \(K\) diverse candidate profiles and evaluates each via the LOGIC-rule-based utility proxy (Eq. 4). The best-performing candidate then undergoes iterative refinement for \(T\) rounds: at each iteration, prediction errors are analyzed to produce targeted feedback, and the LLM generates an improved profile conditioned on this feedback. Throughout the process, all candidate profiles are compared pairwise to construct preference pairs with a margin threshold \(\gamma\), which are subsequently used for DPO fine-tuning to align the LLM's generation capability with downstream prediction utility.</p>
-<div class="algocard">
-  <div class="algohead"><span class="an">Algorithm 2:</span> Utility-Aligned Profile Exploration</div>
+<div class="algocard" id="alg-2">
+  <div class="algohead"><span class="an">Algorithm 2:</span> Utility-Aligned Profile Exploration (as implemented)</div>
   <div class="algoios">
-    <b>Require:</b> Cluster \(a\), aggregated history \(\mathcal{H}_a\), global knowledge \(\mathcal{K}\), LLM \(\mathcal{M}\)<br>
-    <b>Ensure:</b> Optimal profile \(\textit{profile}_a^*\), preference pairs \(\mathcal{P}_a\)
+    <b>Require:</b> Cluster \(a\) with context split \(S^{\text{ctx}}_a\) and selection split \(S^{\text{sel}}_a\), knowledge \(\mathcal{K}\), LLM \(\mathcal{M}\), drafts \(K{=}5\), budget \(B{=}15\)<br>
+    <b>Ensure:</b> Top-5 candidates of \(a\); preference pairs \(\mathcal{D}_{\text{pref},a}\)
   </div>
   <ol class="algolines">
-    <li><span class="cm">// Initial candidate generation</span></li>
-    <li>\(\{\textit{profile}_a^{(k)}\}_{k=1}^{K} \gets \mathcal{M}.\text{generate}(\mathcal{H}_a, \mathcal{K}, K)\)</li>
-    <li><span class="cm">// Evaluate initial candidates via LOGIC rules</span></li>
-    <li><b>for</b> \(k = 1\) <b>to</b> \(K\) <b>do</b></li>
-    <li class="i1">\(\textit{LOGIC}_a^{(k)} \gets \text{extract\_logic}(\textit{profile}_a^{(k)})\)</li>
-    <li class="i1"><span class="tail">&#9655; Eq. (4)</span>\(\Delta_a^{(k)} \gets \text{EvaluateUtility}(\textit{LOGIC}_a^{(k)}, \mathcal{H}_a)\)</li>
-    <li><b>end for</b></li>
-    <li>\(k^* \gets \arg\max_k \Delta_a^{(k)}\)</li>
-    <li>\(\textit{profile}_a^{\textit{best}} \gets \textit{profile}_a^{(k^*)}\); \(\Delta_a^{\textit{best}} \gets \Delta_a^{(k^*)}\)</li>
-    <li><span class="cm">// Iterative refinement</span></li>
-    <li><b>for</b> \(t = 1\) <b>to</b> \(T\) <b>do</b></li>
-    <li class="i1">\(\textit{feedback} \gets \text{AnalyzeErrors}(\textit{LOGIC}_a^{\textit{best}}, \mathcal{H}_a)\)</li>
-    <li class="i1">\(\{\textit{profile}_a^{(t,k)}\}_{k=1}^{K} \gets \mathcal{M}.\text{refine}(\textit{profile}_a^{\textit{best}}, \textit{feedback}, K)\)</li>
-    <li class="i1"><b>for</b> \(k = 1\) <b>to</b> \(K\) <b>do</b></li>
-    <li class="i2">\(\Delta_a^{(t,k)} \gets \text{EvaluateUtility}(\textit{profile}_a^{(t,k)}, \mathcal{H}_a)\)</li>
-    <li class="i1"><b>end for</b></li>
-    <li class="i1">\(k^{\dagger} \gets \arg\max_k \Delta_a^{(t,k)}\)</li>
-    <li class="i1"><b>if</b> \(\Delta_a^{(t,k^{\dagger})} \gt \Delta_a^{\textit{best}}\) <b>then</b></li>
-    <li class="i2">\(\textit{profile}_a^{\textit{best}} \gets \textit{profile}_a^{(t,k^{\dagger})}\); \(\Delta_a^{\textit{best}} \gets \Delta_a^{(t,k^{\dagger})}\)</li>
+    <li>\(J \gets \emptyset\)</li>
+    <li><b>for</b> \(\textit{step} = 1\) <b>to</b> \(B\) <b>do</b></li>
+    <li class="i1"><b>if</b> \(|\text{drafts}(J)| &lt; K\) <b>then</b> \(n \gets \mathcal{M}.\text{draft}(S^{\text{ctx}}_a, \mathcal{K})\)</li>
+    <li class="i1"><b>else if</b> buggy candidates exist <b>and</b> \(\text{rand}() &lt; 0.25\) <b>then</b> \(n \gets \mathcal{M}.\text{debug}(\text{random buggy leaf})\)</li>
+    <li class="i1"><b>else</b> \(b \gets \arg\max_{n' \in J}\Delta(n')\); \(n \gets \mathcal{M}.\text{improve}(b, \text{feedback}(b))\)</li>
     <li class="i1"><b>end if</b></li>
+    <li class="i1">\(\lambda^* \gets \arg\max_{\lambda\in\{0.01,\ldots,0.99\}} \tfrac12[\text{AUC}_{\text{ctx}}(\lambda)+\text{AUC}_{\text{sel}}(\lambda)]\)</li>
+    <li class="i1">\(\Delta(n) \gets \text{AUC}_{\text{sel}}(\lambda^*) - \text{AUC}^{\text{base}}_{\text{sel}}\); \(J \gets J\cup\{n\}\)</li>
+    <li class="i1"><b>if</b> \(\Delta\) has plateaued <b>then break</b></li>
     <li><b>end for</b></li>
-    <li>\(\textit{profile}_a^* \gets \textit{profile}_a^{\textit{best}}\)</li>
-    <li><span class="cm">// Construct preference pairs for DPO</span></li>
-    <li>\(\mathcal{P}_a \gets \{(\mathcal{H}_a, \textit{profile}_w, \textit{profile}_l) : \Delta_w \gt \Delta_l + \gamma\}\)</li>
-    <li><b>return</b> \(\textit{profile}_a^*\), \(\mathcal{P}_a\)</li>
+    <li>\(\mathcal{D}_{\text{pref},a} \gets \{(\mathcal{H}_a, n_w, n_l) : \Delta(n_w) &gt; \Delta(n_l) + \gamma\}\)</li>
+    <li><b>return</b> the five candidates in \(J\) with the highest \(\Delta\), \(\mathcal{D}_{\text{pref},a}\)</li>
   </ol>
 </div>
 </section>
 
-<section class="apx" id="archetypes">
-  <h2><span class="tag">F</span>Discovered Cluster Archetypes<a class="permalink" href="#archetypes" aria-label="Permalink to Appendix F">#</a></h2>
-<p class="find">ProfiLLM's clustering rules are <em>not</em> manually specified. They are produced by the LLM agent during the Synthesize phase of Tool-Augmented Global Knowledge Mining (<a href="#algorithms">Algorithm 1</a>), which interprets cluster centroids and their \(z\)-score deviations from the population mean to assign meaningful archetype labels. Drivers and passengers are clustered separately into \(A = A_D \cup A_P\), where the agent settled on \(|A_D| = 28\) driver clusters and \(|A_P| = 49\) passenger clusters in our main experiments. Clustering uses dozens of behavioral features, including order volume and frequency, acceptance/grab rate, cancellation rate and patterns, completion rate, average fee and price sensitivity, active-time distribution, trip distance and duration, spatial activity patterns, and derived ratios (e.g., cancel-to-complete ratio, peak-hour share).</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/archetypes.png" alt="Two bar charts showing the population share of the top-5 LLM-discovered archetypes for drivers and passengers in City A, with all remaining clusters aggregated into an Other bar. The dominant driver archetypes (Regular, Night-Owl, Long-Distance, Selective, Frequent-Cancellation) together cover 81.6% of drivers, and the top-5 passenger archetypes cover 87.9% of passengers.">
-<figcaption><b>Figure 8:</b> Population share of the top-5 LLM-discovered archetypes in City&nbsp;A for drivers (\(|A_D| = 28\)) and passengers (\(|A_P| = 49\)), with the remaining clusters aggregated for clarity. <a class="pdflink" href="static/pdfs/figs/archetypes.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-<p class="find">Figure 8 reports the population share of the top-5 archetypes for each role, and Table 5 lists their defining characteristics. The dominant driver groups (Regular, Night-Owl, Long-Distance, Selective, Frequent-Cancellation) together cover 81.6% of the active driver fleet, while the corresponding top-5 passenger groups cover 87.9% of the passenger population. Tail clusters retain meaningful distinctions (e.g., airport-specialist drivers, time-sensitive commuter passengers) that the LLM agent labels using domain-grounded heuristics from the mined global knowledge.</p>
-<p class="tablecap"><b>Table 5:</b> Representative archetypes discovered by the LLM agent in City&nbsp;A. Listed signatures are cluster-centroid characteristic values (salient deviations from the population mean) used by the agent for labeling, not realized post-acceptance PCR/DCR rates.</p>
-<div class="tw"><table class="dt" id="tarch">
-  <thead><tr><th style="text-align:left">Archetype</th><th>Share</th><th style="text-align:left">Key behavioral signatures</th></tr></thead>
-  <tbody>
-    <tr class="grp"><td colspan="3">Driver</td></tr>
-    <tr><td>Regular Driver</td><td>28.1%</td><td style="text-align:left">Moderate activity, morning-dominant hours</td></tr>
-    <tr><td>Night-Owl Driver</td><td>23.9%</td><td style="text-align:left">Avg. hour 16.1, high evening concentration</td></tr>
-    <tr><td>Long-Distance Driver</td><td>15.3%</td><td style="text-align:left">Avg. fee 20.8, avg. trip 7.7&nbsp;km</td></tr>
-    <tr><td>Selective Driver</td><td>8.9%</td><td style="text-align:left">Low volume but 44.6% grab rate</td></tr>
-    <tr><td>Frequent-Cancellation Driver</td><td>5.4%</td><td style="text-align:left">Elevated post-acceptance cancellation, lower completion</td></tr>
-    <tr class="grp"><td colspan="3">Passenger</td></tr>
-    <tr><td>Night Rider</td><td>26.4%</td><td style="text-align:left">Avg. hour 16.8, evening-dominant</td></tr>
-    <tr><td>Regular Passenger</td><td>21.4%</td><td style="text-align:left">Moderate volume, morning-focused</td></tr>
-    <tr><td>Frequent-Cancellation Passenger</td><td>14.8%</td><td style="text-align:left">Elevated post-acceptance cancellation</td></tr>
-    <tr><td>Low-Frequency Passenger</td><td>13.6%</td><td style="text-align:left">Low volume, moderate completion</td></tr>
-    <tr><td>Long-Trip Passenger</td><td>11.7%</td><td style="text-align:left">Avg. trip 14.1&nbsp;km, higher fare</td></tr>
-  </tbody>
-</table></div>
-<h3 class="subh" id="cluster-viz">F.1&nbsp;&nbsp;User Cluster Embedding Visualization</h3>
-<p class="find">To qualitatively assess whether the clustering rules \(\mathcal{A}\) yield behaviorally separable groups, we visualize user-level embedding distributions via t-SNE [van der Maaten and Hinton, 2008]. For each user \(u \in \mathcal{P} \cup \mathcal{D}\), we extract a behavioral feature vector from \(\mathcal{H}_u\) and assign them to cluster \(a^*(u)\) via rules \(\mathcal{A}\). Before dimensionality reduction, we apply core filtering (retaining the nearest 80% of points to each cluster centroid) and stratified sampling (capping at 15,000 points per role). The filtered embeddings are standardized, reduced to 50 dimensions via PCA, and projected to 2D with t-SNE (perplexity&nbsp;=&nbsp;35, PCA initialization, seed&nbsp;=&nbsp;42).</p>
-<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
-  <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" src="static/images/tsne_driver.png" alt="2D t-SNE scatter plot of driver behavioral embeddings in City A, with points colored by cluster assignment and the top-8 largest clusters labeled at their median positions; clusters are compact and well-separated."><figcaption>(a) Driver clusters. <a class="pdflink" href="static/pdfs/figs/tsne_driver.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-  <figure style="margin:0"><img class="zoom" loading="lazy" decoding="async" src="static/images/tsne_passenger.png" alt="2D t-SNE scatter plot of passenger behavioral embeddings in City A, with points colored by cluster assignment and the top-8 largest clusters labeled at their median positions; clusters are broader and more overlapping, indicating greater behavioral diversity."><figcaption>(b) Passenger clusters. <a class="pdflink" href="static/pdfs/figs/tsne_passenger.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-</div>
-<p class="figcap-wide"><b>Figure 9:</b> t-SNE visualization of user cluster embeddings in City&nbsp;A, showing (a) driver clusters and (b) passenger clusters. Each point represents a user colored by cluster assignment; the top-8 largest clusters are labeled at their median positions.</p>
-<p class="find">Figure 9 presents the resulting scatter plots for City&nbsp;A, with the top-8 largest clusters annotated at their median positions. The driver embedding space (Figure 9&nbsp;(a)) exhibits well-separated clusters corresponding to discovered archetypes, including <em>Regular Drivers</em>&nbsp;(C00), <em>Night Owls</em>&nbsp;(C01), and <em>Long-Distance Drivers</em>&nbsp;(C02). The passenger embedding space (Figure 9&nbsp;(b)) similarly reveals distinct groups such as <em>Night Riders</em>, <em>Regular Passengers</em>, and <em>Frequent-Cancellation Passengers</em>, though with more overlap reflecting higher behavioral diversity on the passenger side. The clear visual separation confirms that the LLM-agent-derived clustering rules partition users into behaviorally coherent groups, supporting cluster-level profiles as effective proxies for individual user behavior in downstream outcome prediction.</p>
-</section>
-
-<section class="apx" id="simulator">
-  <h2><span class="tag">G</span>Dispatching Simulator Architecture<a class="permalink" href="#simulator" aria-label="Permalink to Appendix G">#</a></h2>
-<p class="find">We summarize the design choices that make our simulator a faithful and reproducible offline counterpart to production dispatcher.</p>
-<p class="find"><b>Replay-based discrete-event environment.</b> The simulator replays five full days of historical order arrivals and driver availability per city, rather than generating synthetic demand. All orders arrive at their actual timestamps with real origin, destination, dynamic pricing (including surge multipliers), and over 30 contextual features. Driver positions are initialized from actual GPS trajectory logs, and each driver's online-duration distribution is reconstructed from historical records. The geographic space uses the same production grid system, preserving real-world spatiotemporal distributions of demand, supply, and traffic.</p>
-<p class="find"><b>Production-identical dispatching cadence and matching.</b> The simulator operates in 2-second dispatching cycles. At each cycle, candidate OD pairs are enumerated within a 1,500-meter pickup radius; the production STR (Spatio-Temporal Revenue) formula scores each pair using Accept/P-Cancel/D-Cancel predictions, pickup cost, and order value with production-calibrated weights; and the optimal bipartite assignment is solved via a Lagrangian-relaxation variant of Kuhn&ndash;Munkres, identical to the algorithm deployed in production.</p>
-<p class="find"><b>Production routing API integration.</b> The simulator queries DiDi's production routing service via Thrift RPC to obtain live-traffic-aware ETA and pickup distance (with 25th/75th-percentile confidence intervals), eliminating a major source of bias that approximate offline routing would introduce.</p>
-<p class="find"><b>Three-stage stochastic outcome simulation.</b> Rather than sampling a single completion probability, the simulator implements a three-stage sequential decision process: (i)&nbsp;Accept sampling (driver acceptance); (ii)&nbsp;conditional D-Cancel sampling; (iii)&nbsp;P-Cancel sampling. An order completes <em>only if</em> the driver accepts and neither party cancels. Failed orders re-enter the pending queue for re-dispatch up to a 180-second patience timeout, producing realistic re-dispatch cascades. This three-stage design captures the feedback loop in which a better predictor yields better matches, fewer rejections, fewer re-dispatches, and higher system-wide efficiency.</p>
-<p class="find"><b>Dynamic state evolution.</b> Drivers transition between <em>idle</em>, <em>en-route-to-pickup</em>, and <em>in-service</em> states with real-time features refreshed every cycle, ensuring that downstream feature distributions remain consistent with production. Orders follow realistic lifecycle transitions with timeouts, and grid-level supply-demand statistics support spatial-aware matching weights.</p>
-<p class="find"><b>Validation against production.</b> Comparing simulation (<a href="index.html#t1">Table 1 of the paper</a>, City&nbsp;A) with the 14-day online A/B test (Figure 5 of the paper) shows directional consistency on every core metric (GMV, CR, PCR, DCR all moving in the desired direction), though the online deltas are several times smaller (e.g., <b>+0.47%</b> vs. <b>+4.02%</b> GMV, a \(\sim\)8&ndash;9&times; gap). Simulation magnitudes exceed online deltas because the simulator both scores candidate matches and samples their outcomes from the <em>same</em> model, grading each policy on its own beliefs in a closed loop that omits the live confounders (driver multi-homing, exogenous demand shocks, concurrent experiments) which attenuate real treatment effects; this downward bias is well documented for two-sided-marketplace experiments [Holtz and Aral, 2020]. This direction-preserving, magnitude-inflating behavior is characteristic of replay-based ride-hailing simulators [Xu et al., 2018; Qin et al., 2020; Yang et al., 2024] and mirrors the broader offline-to-online gap, in which offline metrics overstate online performance while better preserving method ranking [Hidasi and Czapp, 2023]. The key validation criterion is therefore directional consistency and method ranking preservation, both of which our simulator delivers.</p>
-</section>
-
-<section class="apx" id="wait-time">
-  <h2><span class="tag">H</span>Passenger Wait Time Analysis<a class="permalink" href="#wait-time" aria-label="Permalink to Appendix H">#</a></h2>
-<p class="find">We further analyze passenger wait time in the dispatching simulator to evaluate user experience beyond platform-level metrics. As shown in Figure 10, the two non-LLM baselines exhibit the highest average wait times (GRC: 50.2s, KM Pickup: 47.8s), while all LLM-based strategies achieve notably lower values ranging from 43.1s to 45.1s. ProfiLLM attains the lowest average wait time of 43.1s, representing reductions of 9.8% over KM Pickup and 14.1% over GRC. The long-wait rate (&gt;60s) follows a consistent pattern: GRC and KM Pickup reach 33.9% and 32.2%, respectively, whereas ProfiLLM reduces this to 28.4%. The CDF curves further confirm a systematic leftward shift for ProfiLLM across all quantiles, indicating that the improvement is not driven by a small subset of orders but reflects enhanced dispatching efficiency throughout. These results complement the GMV and CR metrics in Section 4.2 of the paper, demonstrating that utility-aligned user profiles improve not only platform revenue but also passenger-perceived service quality.</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/wait_time.png" alt="Three-panel figure comparing passenger wait times across dispatching strategies. Panels (a) and (b) are bar charts of average wait time and the share of orders exceeding 60 seconds. Panel (c) is a CDF plot in which the ProfiLLM curve sits to the left of all baselines across the entire distribution, indicating shorter wait times at every quantile.">
-<figcaption><b>Figure 10:</b> Passenger wait time analysis in the dispatching simulator. (a) Average wait time for matched orders. (b) Proportion of orders with wait time exceeding 60 seconds. (c) Cumulative distribution function (CDF) of wait times for representative strategies. <a class="pdflink" href="static/pdfs/figs/wait_time.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-</section>
-
-<section class="apx" id="hourly">
-  <h2><span class="tag">I</span>Hourly Performance Analysis<a class="permalink" href="#hourly" aria-label="Permalink to Appendix I">#</a></h2>
-<p class="find">To understand how different strategies perform across varying demand conditions, we analyze hourly GMV and CR in the dispatching simulator. As shown in Figure 11, all strategies follow the same demand pattern with peaks around noon (12&ndash;13h) and evening (18&ndash;19h), and a trough in the early morning (4&ndash;5h). ProfiLLM and ProfiLLM-DPO consistently outperform baselines throughout the day, with the gap most pronounced during evening peak hours (17&ndash;20h) when supply-demand imbalance intensifies and accurate outcome prediction becomes critical. Notably, GRC suffers a sharp CR drop during evening hours (falling below 40%), likely due to its cooperative game formulation struggling under severe supply constraints, whereas ProfiLLM maintains stable performance above 50%. The consistent hourly advantage confirms that utility-aligned user profiles provide robust improvements across diverse operational conditions rather than benefiting only specific time periods.</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/hourly.png" alt="Two stacked line plots showing hourly GMV and completion rate (CR) across a 24-hour day in the dispatching simulator, with morning, noon, and evening peak windows shaded. ProfiLLM and ProfiLLM-DPO curves stay above the baselines throughout the day and pull further ahead during the evening peak, while GRC's CR drops sharply during evening hours.">
-<figcaption><b>Figure 11:</b> Hourly GMV and CR in the dispatching simulator. Shaded regions indicate peak hours (morning 7&ndash;10, noon 11&ndash;14, evening 17&ndash;20). <a class="pdflink" href="static/pdfs/figs/hourly.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-</section>
-
-<section class="apx" id="cluster-sensitivity">
-  <h2><span class="tag">J</span>Cluster-Count Sensitivity<a class="permalink" href="#cluster-sensitivity" aria-label="Permalink to Appendix J">#</a></h2>
-<p class="find">To verify that the framework is robust to the granularity of clustering, we evaluate 11 cluster configurations on City&nbsp;A by varying one side while fixing the other: \(|A_D|\in\{8,16,32,64,128,256\}\) at \(|A_P|=64\), and \(|A_P|\in\{8,16,32,64,128,256\}\) at \(|A_D|=32\). Each configuration is evaluated against 9 LLM backbones (the 7 baselines in <a href="index.html#t2">Table 2 of the paper</a> plus ProfiLLM and ProfiLLM-DPO), totaling 99 runs.</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/cluster_sens.png" alt="Two side-by-side line plots showing prediction AUC for the four outcome tasks as the number of driver or passenger clusters is swept across 8, 16, 32, 64, 128, and 256. ProfiLLM (dashed) and ProfiLLM-DPO (solid) curves rise from 8 to 16 clusters and then plateau, with all four metrics remaining within a 0.6 percentage-point band beyond 16 clusters.">
-<figcaption><b>Figure 12:</b> Cluster-count sensitivity for ProfiLLM (dashed) and ProfiLLM-DPO (solid) on City&nbsp;A, with each curve aggregated over 9 LLM backbones. Left: varying \(|A_D|\) with \(|A_P|=64\). Right: varying \(|A_P|\) with \(|A_D|=32\). The cross-model standard deviation across the 9 backbones is 0.05%&ndash;0.27%. <a class="pdflink" href="static/pdfs/figs/cluster_sens.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-<p class="find">Figure 12 shows that both ProfiLLM and ProfiLLM-DPO produce stable AUC across the entire sweep. Performance climbs from 8 to 16 clusters per side and then plateaus, with variation within 0.6&nbsp;p.p. absolute AUC for all four tasks. Across all 11 cluster configurations, both ProfiLLM and ProfiLLM-DPO outperform the structured-only baseline on Accept, D-Cancel, and P-Cancel at every cluster count; among the 99 runs the un-aligned baseline backbones remain mixed (consistent with <a href="index.html#t2">Table 2 of the paper</a>), confirming that the ProfiLLM gains observed in the main paper are not specific to a particular cluster count. Across the same sweep, the two variants are statistically indistinguishable on prediction AUC: average \(\Delta=\) +0.14% (Accept), +0.05% (D-Cancel), +0.02% (P-Cancel), and +0.14% (Success), with the sign of \(\Delta\) fluctuating across configurations rather than systematically favoring either variant. This supports our deployment choice of ProfiLLM-DPO, which achieves comparable prediction quality at substantially lower offline refresh cost (<a href="#offline-cost">Appendix M</a>).</p>
-</section>
-
-<section class="apx" id="lambda">
-  <h2><span class="tag">K</span>Utility-Proxy Sensitivity to the Blending Coefficient λ<a class="permalink" href="#lambda" aria-label="Permalink to Appendix K">#</a></h2>
-<p class="find">The blending coefficient \(\lambda\) in Eq. (3) of the paper controls how strongly the LOGIC rules are mixed with the base production model during <em>offline profile evaluation</em>. It does not appear in the online prediction model. We perform a grid search over \(\lambda\in\{0,0.1,\ldots,1.0\}\) across 6 cluster granularities for each of 3 outcome tasks, yielding 494 cluster-task combinations (21 driver-accept, 82 driver-cancel, 391 passenger-cancel clusters; counts vary because clusters with insufficient behavioral data are filtered out).</p>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/lambda.png" alt="Two side-by-side plots characterising sensitivity to the LOGIC blending coefficient lambda. The left line plot shows AUC versus lambda in [0,1] for Driver Accept, Driver Cancel, and Passenger Cancel, with stars at each task's peak; all tasks rise from lambda equals 0, peak between 0.7 and 0.9, then drop sharply at 1.0. The right bar chart shows the average AUC gain at each task's best lambda, with the largest gain for Passenger Cancel.">
-<figcaption><b>Figure 13:</b> Sensitivity of the LOGIC-rule utility proxy to the blending coefficient \(\lambda\). Left: per-task LOGIC-fused AUC versus \(\lambda\in[0,1]\), averaged across 494 cluster-task combinations; stars mark each task's peak. Right: average AUC gain at the best \(\lambda\) for each task. \(\lambda=1.0\) denotes pure LOGIC with the base model discarded. <a class="pdflink" href="static/pdfs/figs/lambda.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-<p class="find">Figure 13 (left) reports the average LOGIC-fused AUC as a function of \(\lambda\). Three patterns are clear: (1)&nbsp;All tasks improve over \(\lambda=0\) (base model only) once blending is introduced, demonstrating that LOGIC rules supply <em>complementary</em> discriminative signal beyond structured features. (2)&nbsp;All tasks collapse at \(\lambda=1.0\) (pure LOGIC, base model discarded), confirming the conservative design that retains the strong production predictor. (3)&nbsp;The optimum is task-dependent: Driver Accept and Passenger Cancel peak at \(\lambda=0.9\), whereas Driver Cancel peaks at \(\lambda=0.7\)&ndash;\(0.8\) and stays remarkably flat over \(\lambda\in[0.1,0.9]\). At the cluster level, 65.7% of passenger clusters prefer \(\lambda=0.9\) while 40.2% of driver-cancel clusters prefer \(\lambda=0.1\), motivating adaptive per-cluster \(\lambda\) selection as a direction for future work.</p>
-<p class="find">Figure 13 (right) summarises the per-task gain at each task's best \(\lambda\): +2.8% (Driver Accept), +5.5% (Driver Cancel), and +19.0% (Passenger Cancel). The cancellation tasks gain the most, mirroring the prediction-AUC pattern in <a href="index.html#t2">Table 2 of the paper</a>: behavioral profiling shines exactly where structured features struggle most, namely in capturing the contextual decision logic behind cancellations.</p>
-</section>
-
-<section class="apx" id="dpo-vs-exploration">
-  <h2><span class="tag">L</span>DPO vs. Exploration: Why Both Variants Help<a class="permalink" href="#dpo-vs-exploration" aria-label="Permalink to Appendix L">#</a></h2>
-<p class="find">A natural question is why we report both ProfiLLM (exploration only) and ProfiLLM-DPO (with DPO fine-tuning) when their per-task prediction AUCs in <a href="index.html#t2">Table 2 of the paper</a> are similar. The two variants are complementary by design, and we clarify their roles below.</p>
-<p class="find"><b>(1) DPO targets generator efficiency, not per-task AUC.</b> ProfiLLM (exploration) generates \(K=5\) candidate profiles per cluster and refines the best for \(T=3\) iterations. The theoretical upper bound is \(K(1+T)=20\) LLM calls per cluster (5 initial + 5 re-explored per refinement iteration), which we cap at 15 in deployment for compute efficiency. ProfiLLM-DPO generates a high-quality profile in a <em>single pass</em>, eliminating the iterative search. When profiles are refreshed for new clusters, new cities, or updated behavioral data, this collapses the offline LLM-call budget by an order of magnitude (<a href="#offline-cost">Appendix M</a>). Both variants serve identically online via cached embeddings; the difference is purely offline.</p>
-<p class="find"><b>(2) The two variants achieve comparable prediction quality across configurations.</b> Across the 11 cluster configurations of <a href="#cluster-sensitivity">Appendix J</a>, the average inter-variant gap is only +0.14% (Accept AUC), +0.02% (P-Cancel AUC), and +0.14% (Success AUC), with the sign of the gap fluctuating across configurations rather than systematically favoring either variant (maximum absolute deviation is 0.55&nbsp;p.p.). Both variants substantially outperform all 7 baseline LLMs in every metric and every city (Tables <a href="index.html#t1">1</a>&ndash;<a href="index.html#t2">2</a> of the paper), so the choice between them is dominated by cost, not quality.</p>
-<p class="find"><b>(3) Per-task differences in <a href="index.html#t2">Table 2 of the paper</a> reflect different optimization strategies, not degradation.</b> ProfiLLM (exploration) performs <em>per-cluster local optimization</em>: it iteratively searches profile space for each cluster, and the LOGIC-rule AUC proxy directly drives the selection. ProfiLLM-DPO aggregates preference pairs <em>across clusters</em> and learns a single generator (Qwen3-8B) that produces high-utility profiles in one pass. The latter trades a small amount of per-cluster local optimality for cross-cluster generalization. A second, subtler factor is the <em>signal-channel gap</em>: DPO is supervised on LOGIC-rule AUC (a discrete Boolean projection), while the downstream prediction model consumes PROFILE <em>text embeddings</em> (continuous dense vectors). The two share the same behavioral understanding but are not identical, so DPO optimization on one does not transfer perfectly to the other. Finally, online GMV is a composite matching objective over all three predicted outcomes, so small per-task differences can cancel or compound through the matching weights.</p>
-<p class="find">We therefore deploy ProfiLLM-DPO in production because it achieves comparable prediction quality at substantially lower offline refresh cost, enabling faster iteration when scaling to new clusters and cities.</p>
-</section>
-
-<section class="apx" id="offline-cost">
-  <h2><span class="tag">M</span>Offline System Cost Analysis<a class="permalink" href="#offline-cost" aria-label="Permalink to Appendix M">#</a></h2>
-<p class="find">Table 6 reports the end-to-end offline cost of running ProfiLLM on a single city with \(|A_D|=32\) driver clusters and \(|A_P|=64\) passenger clusters using Gemini-3-Pro as the analyst LLM (input $1.25/1M tokens, output $10.00/1M tokens). Downstream model training uses one NVIDIA L20 GPU (48GB) at $1.50/GPU-hour.</p>
-<p class="tablecap"><b>Table 6:</b> Offline pipeline cost breakdown for one city. The Profile + Exploration LLM-call count is \((32+64)\times 15=1{,}440\), where 15 is the deployed per-cluster cap (theoretical max \(K(1+T)=20\) with \(K=5, T=3\)).</p>
-<div class="tw"><table class="dt" id="tcost">
-<thead><tr><th style="text-align:left">Stage</th><th>Hardware</th><th>Wall Time</th><th>LLM Calls</th><th>Tokens (in/out)</th><th>Cost</th></tr></thead>
-<tbody>
-<tr class="grp"><td colspan="6"><em>Initial run (ProfiLLM, exploration)</em></td></tr>
-<tr><td style="text-align:left">Global Knowledge Mining</td><td>CPU+API</td><td>~50&nbsp;min</td><td>~20</td><td>2M/0.5M</td><td>$7.50</td></tr>
-<tr><td style="text-align:left">Profile + Exploration</td><td>CPU+API</td><td>~240&nbsp;min</td><td>~1,440</td><td>12M/3M</td><td>$45.00</td></tr>
-<tr><td style="text-align:left">Downstream Training</td><td>1&times;L20</td><td>~85&nbsp;min</td><td>0</td><td>&ndash;</td><td>$2.13</td></tr>
-<tr class="ours"><td style="text-align:left"><b>Total initial</b></td><td>&ndash;</td><td><b>~6.3&nbsp;hrs</b></td><td><b>~1,460</b></td><td>14M/3.5M</td><td class="best">$54.63</td></tr>
-<tr class="grp"><td colspan="6"><em>Subsequent refresh (ProfiLLM-DPO, single-pass)</em></td></tr>
-<tr><td style="text-align:left">Profile Generation</td><td>CPU+API</td><td>~25&nbsp;min</td><td>96</td><td>0.8M/0.2M</td><td>$3.00</td></tr>
-<tr><td style="text-align:left">Downstream Training</td><td>1&times;L20</td><td>~85&nbsp;min</td><td>0</td><td>&ndash;</td><td>$2.13</td></tr>
-<tr class="ours"><td style="text-align:left"><b>Total refresh</b></td><td>&ndash;</td><td><b>~1.8&nbsp;hrs</b></td><td><b>96</b></td><td>0.8M/0.2M</td><td class="best">$5.13</td></tr>
-</tbody>
-</table></div>
-<figure><img class="zoom" loading="lazy" decoding="async" src="static/images/system_cost.png" alt="Two-panel cost breakdown chart. Panel (a): stacked bars of per-stage offline cost (knowledge mining, profile exploration, embedding) for the initial ProfiLLM run versus a single-pass DPO refresh, with exploration dominating the initial run and shrinking dramatically under DPO. Panel (b): bars of total per-city offline cost, with the DPO refresh about 10.6 times cheaper than the initial run.">
-<figcaption><b>Figure 14:</b> Offline cost breakdown. (a) Per-stage cost for the initial ProfiLLM run vs. a single-pass DPO refresh. (b) Total per-city offline cost for the two settings. <a class="pdflink" href="static/pdfs/figs/system_cost.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
-<p class="find">Three observations follow (Figure 14). (1)&nbsp;<b>Cluster-level profiling drives cost efficiency</b>: 96 cluster-level profiles cover all 348,464 users in City&nbsp;A, a 3,630&times; reduction over per-user profiling and the precondition for affordable LLM-driven profiling at platform scale. (2)&nbsp;<b>DPO compounds the efficiency gain</b>: once DPO is trained, subsequent refreshes require only 96 single-pass calls, reducing per-city LLM cost from $52.50 to $3.00 and total refresh cost from $54.63 to $5.13 (~10.6&times; reduction). (3)&nbsp;<b>Online overhead is negligible</b>: at serving time the system performs only deterministic cluster assignment (&lt;0.01&nbsp;ms) and a cached embedding lookup (&lt;0.001&nbsp;ms), well within DiDi's 200&nbsp;ms latency budget; no LLM is queried online.</p>
-<p class="find">The 14-day A/B improvement of +0.47% GMV on a platform processing millions of daily orders translates into revenue gains that exceed the offline cost by several orders of magnitude, even before considering the platform-side savings from reduced cancellations and bad-experience rates.</p>
-</section>
-
-<section class="apx" id="complexity">
-  <h2><span class="tag">N</span>Complexity Analysis<a class="permalink" href="#complexity" aria-label="Permalink to Appendix N">#</a></h2>
-<p class="find">We analyze the computational complexity of ProfiLLM along offline, online, and storage dimensions, and compare against per-user profiling. Notation follows Section 2 of the paper: \(M=|\mathcal{P}|\) passengers and \(N=|\mathcal{D}|\) drivers; \(\mathcal{H}=\bigcup_u \mathcal{H}_u\) aggregated history with \(|\mathcal{H}|=\sum_u |\mathcal{H}_u|\); \(\mathcal{A}=\mathcal{A}_D\cup\mathcal{A}_P\) cluster set; \(K{=}5\) candidates per generation, \(T{=}3\) refinement iterations; \(d{=}768\) embedding dimension; and \(|\mathcal{C}|\) candidate OD pairs per dispatching cycle.</p>
-
-<h3 class="subh">Offline Complexity</h3>
-
-<p class="find"><b>(O1) Knowledge Mining (Algorithm 1).</b> Each tool performs at most a single pass over \(\mathcal{H}\) at \(O(|\mathcal{H}|)\) cost. The Explore phase invokes the basic tool set \(\mathcal{T}_{\textit{basic}}\subset\mathcal{T}\); Deepen and Validate may then invoke any tool in \(\mathcal{T}\) via targeted chains, with each tool used at most once across the workflow (so the total tool-invocation count is \(O(|\mathcal{T}|)\)). The aggregate tool-execution cost is therefore \(O(|\mathcal{T}|\cdot|\mathcal{H}|)\). The LLM agent issues a constant number of reasoning calls (\({\approx}20\) in deployment, Table 6), independent of \(|\mathcal{H}|\). This stage is linear in data and constant in LLM calls.</p>
-
-<p class="find"><b>(O2) Cluster Assignment.</b> For each user \(u\), we evaluate \(|\mathcal{A}|\) membership rules over \(\mathcal{H}_u\), costing \(O(|\mathcal{A}|\cdot|\mathcal{H}_u|)\). Summed over all users this is \(O(|\mathcal{A}|\cdot|\mathcal{H}|)\) and is embarrassingly parallel.</p>
-
-<p class="find"><b>(O3) Profile Exploration (Algorithm 2).</b> Per cluster \(a\) with aggregated history \(\mathcal{H}_a\) (where \(\sum_a |\mathcal{H}_a|\le|\mathcal{H}|\)), the initial generation issues \(K\) LLM calls, and each of the \(T\) refinement iterations regenerates \(K\) candidates conditioned on prediction-error feedback, contributing \(KT\) additional calls; every generated candidate's LOGIC rule is then evaluated over \(\mathcal{H}_a\) at \(O(|\mathcal{H}_a|)\) cost. Aggregating over clusters:
-\[ \text{LLM calls}=O\bigl(|\mathcal{A}|\cdot K(1+T)\bigr),\qquad \text{LOGIC eval}=O\bigl(K(1+T)\cdot|\mathcal{H}|\bigr). \]
-The theoretical upper bound is \(K(1+T)=20\) calls per cluster; in deployment we cap total calls at \(15\) per cluster, which corresponds to early-terminating refinement after at most two iterations of the \(K\)-candidate regeneration, yielding \(|\mathcal{A}|\cdot 15=1{,}440\) calls per city for \(|\mathcal{A}|=96\) (Table 6). This is the LLM-call-dominated stage, but the cost is amortized across all users in each cluster.</p>
-
-<p class="find"><b>(O4) DPO Fine-tuning.</b> Preference-pair construction over the \(K(1+T)\) profiles per cluster is at most \(O\bigl(|\mathcal{A}|\cdot K^2(1+T)^2\bigr)\). The DPO training cost is the standard LLM fine-tuning loop, \(O(E\cdot|\mathcal{P}_{\textit{pref}}|\cdot L\cdot c_{\textit{LLM}})\), where \(E\) is the number of epochs, \(L\) is profile token length, and \(c_{\textit{LLM}}\) denotes the per-token forward+backward FLOPs of the base model. In our deployment this takes \({\approx}85\)&nbsp;minutes on one NVIDIA L20 GPU.</p>
-
-<p class="find"><b>(O5) Embedding Precomputation.</b> A single encoder forward per cluster profile: \(O(|\mathcal{A}|\cdot L\cdot c_{\textit{enc}})\). Empirically negligible (seconds for \(|\mathcal{A}|{=}96\)).</p>
-
-<h3 class="subh">Online Complexity (Per Dispatching Cycle)</h3>
-
-<p class="find"><b>(N1) Per OD-pair scoring.</b> Passenger and driver cluster IDs are pre-assigned offline and refreshed at user registration; serving requires only two \(O(1)\) cache lookups returning \(\mathbf{e}_p,\mathbf{e}_d\in\mathbb{R}^d\), an \(O(d)\) feature concatenation, and a constant-cost prediction-network forward \(O(c_f)\).</p>
-
-<p class="find"><b>(N2) Per-cycle cost.</b> For \(|\mathcal{C}|\) candidate OD pairs the per-cycle cost is \(O\bigl(|\mathcal{C}|\cdot(d+c_f)\bigr) \;+\; \mathcal{O}_{\text{KM}}(|\mathcal{C}|)\), where \(\mathcal{O}_{\text{KM}}\) denotes the production Lagrangian-relaxation Kuhn&ndash;Munkres matching cost (identical to the structured-only baseline; see <a href="#simulator">Appendix G</a>). Profile features add only the \(O(|\mathcal{C}|\cdot d)\) feature-concat term, which empirically contributes well under 1&nbsp;ms per cycle (<a href="#offline-cost">Appendix M</a>).</p>
-
-<p class="find"><b>(N3) Cold-start.</b> Users without sufficient history are mapped to a default cluster at registration (\(O(1)\)); no additional online cost.</p>
-
-<h3 class="subh">Storage Complexity</h3>
-
-<p class="find">ProfiLLM's serving state comprises three components. The cluster embeddings occupy \(|\mathcal{A}|\cdot d\cdot 4\)&nbsp;B \(=96\times768\times 4\approx 295\)&nbsp;KB; the user-to-cluster table stores a 32-bit cluster ID per user at 4&nbsp;B each, \(\approx 1.4\)&nbsp;MB for the 348,464 users in City&nbsp;A; and the LOGIC rules and PROFILE text amount to \(|\mathcal{A}|\) short strings, \(\approx 50\)&nbsp;KB. The active footprint is therefore a few MB per city, nearly three orders of magnitude smaller than caching a per-user \(d\)-dimensional embedding (\({\approx}1\)&nbsp;GB for City&nbsp;A).</p>
-
-<h3 class="subh">Comparison with Per-User Profiling</h3>
-
-<p class="find">Cluster-level profiling reduces both LLM-call count and embedding storage by a factor of \((M+N)/|\mathcal{A}|\). For City&nbsp;A:
-\[ \frac{|\mathcal{P}\cup\mathcal{D}|}{|\mathcal{A}|}=\frac{348{,}464}{96}\approx 3{,}630\times. \]
-(The deployment registry contains 348,464 users; <a href="#heterogeneity">Appendix A</a> reports 345,294 users active within a narrower 38-day analysis window, hence the small discrepancy.) This is the structural source of ProfiLLM's offline cost efficiency, and <a href="#cluster-sensitivity">Appendix J</a> confirms that this reduction does not sacrifice prediction quality once \(|\mathcal{A}|\gt 16\).</p>
-
-<h3 class="subh">Summary</h3>
-
-<p class="find">Table 7 consolidates the analysis. Offline complexity is linear in data (\(|\mathcal{H}|\)) for tool execution and cluster assignment, and the LLM-call count is linear in the <em>cluster</em> count \(|\mathcal{A}|\) rather than the <em>user</em> count \((M+N)\). Online complexity is dominated by the existing bipartite-matching solver; profile features add only \(O(|\mathcal{C}|\cdot d)\) FLOPs and two \(O(1)\) cache lookups per OD pair. Storage for LLM-introduced artifacts is sub-MB.</p>
-
-<p class="tablecap"><b>Table 7:</b> Complexity summary. \(|\mathcal{H}|\): total history records; \(|\mathcal{A}|\): cluster count; \(K{=}5\), \(T{=}3\); \(|\mathcal{C}|\): candidate OD pairs per cycle; \(d{=}768\); \(c_f\): constant prediction-network forward cost.</p>
-<div class="tw"><table class="dt" id="tcx">
-  <thead><tr><th style="text-align:left">Stage</th><th style="text-align:left">Time</th><th style="text-align:left">Notes</th></tr></thead>
-  <tbody>
-    <tr class="grp"><td colspan="3">Offline</td></tr>
-    <tr><td>Knowledge Mining (O1)</td><td style="text-align:left">\(O(|\mathcal{T}|\cdot|\mathcal{H}|)\)</td><td style="text-align:left">\(+\,O(1)\) LLM calls</td></tr>
-    <tr><td>Cluster Assignment (O2)</td><td style="text-align:left">\(O(|\mathcal{A}|\cdot|\mathcal{H}|)\)</td><td style="text-align:left">parallel</td></tr>
-    <tr><td>Profile Exploration (O3)</td><td style="text-align:left">\(O(K(1+T)\cdot|\mathcal{H}|)\)</td><td style="text-align:left">\(+\,O(|\mathcal{A}|\cdot K(1+T))\) LLM calls</td></tr>
-    <tr><td>DPO Training (O4)</td><td style="text-align:left">\(O(E\cdot|\mathcal{P}_{\textit{pref}}|\cdot L)\)</td><td style="text-align:left">one-time</td></tr>
-    <tr><td>Embedding (O5)</td><td style="text-align:left">\(O(|\mathcal{A}|\cdot L)\)</td><td style="text-align:left">seconds</td></tr>
-    <tr class="grp"><td colspan="3">Online</td></tr>
-    <tr><td>Online per OD pair (N1)</td><td style="text-align:left">\(O(d+c_f)\)</td><td style="text-align:left">two cache lookups</td></tr>
-    <tr><td>Online per cycle (N2)</td><td style="text-align:left">\(O(|\mathcal{C}|\cdot d)+\mathcal{O}_{\text{KM}}\)</td><td style="text-align:left">KM dominates</td></tr>
-    <tr class="grp"><td colspan="3">Storage</td></tr>
-    <tr><td>Embeddings storage</td><td style="text-align:left">\(O(|\mathcal{A}|\cdot d)\)</td><td style="text-align:left">\(\approx 295\)&nbsp;KB</td></tr>
-    <tr><td>User-cluster table</td><td style="text-align:left">\(O(M+N)\)</td><td style="text-align:left">\(\approx 1.4\)&nbsp;MB (City&nbsp;A)</td></tr>
-  </tbody>
-</table></div>
-</section>
-
-<section class="apx" id="extended-ab">
-  <h2><span class="tag">O</span>Extended 14-day A/B Test: Long-term Stability<a class="permalink" href="#extended-ab" aria-label="Permalink to Appendix O">#</a></h2>
-<p class="find">The 14-day deployment in Section 4.5 of the paper extends the initial 5-day pilot to a longer window for more stable estimates. We summarize the comparison and broader generalization evidence here.</p>
-<p class="find"><b>Stability over time.</b> GMV improvement <em>grew</em> from +0.36% (5 days) to <b>+0.47%</b> (14 days) and CR rose from +0.16% to +0.33%, while every cancellation and bad-experience metric remained directionally negative across the full window (CBA, PCR, DCR, BER). The fact that effect sizes did not decay, and in several cases grew, over the extended observation period supports the interpretation that ProfiLLM produces durable matching-quality gains rather than transient effects.</p>
-<p class="find"><b>Joint movement across funnel stages.</b> Every monitored realized rate moves in the beneficial direction across mechanistically distinct stages of the fulfillment funnel: revenue/completion (GMV, CR), pre-acceptance attrition (CBA), post-acceptance cancellation (PCR, DCR), and completed-order experience (BER). Each stage reflects a different behavioral mechanism, so the joint consistency provides converging evidence that the improvement is systematic. A model that improves only one stage would be expected to show mixed signs elsewhere; the uniform direction here is consistent with profiling improving the underlying outcome prediction that feeds every stage.</p>
-<p class="find"><b>Generalization beyond a single city.</b> While the A/B was conducted in City&nbsp;A, the offline simulator evaluation in <a href="index.html#t1">Table 1 of the paper</a> covers three cities with distinct supply-demand regimes (City&nbsp;A supply-constrained, City&nbsp;B supply-relaxed, City&nbsp;C large-scale high-demand) and uses the production routing API for realistic ETA. ProfiLLM dominates baselines across all three cities and all time-of-day buckets (Figure 11), supporting that the online gains would carry over. Broader online rollout across additional cities is in progress and will be reported in a follow-up.</p>
-</section>
-
-<section class="apx" id="privacy-fairness">
-  <h2><span class="tag">P</span>Privacy and Fairness Considerations<a class="permalink" href="#privacy-fairness" aria-label="Permalink to Appendix P">#</a></h2>
-<p class="find">Because user profiles directly influence which drivers receive which orders, we discuss the privacy and fairness implications of ProfiLLM explicitly.</p>
-<p class="find"><b>Privacy by architectural design.</b> Three safeguards limit exposure of individual data. (1)&nbsp;<em>Cluster-level abstraction.</em> The LLM never sees a single user's identifiable trajectory in isolation. It processes only cluster-pooled, re-sampled order records together with summary statistics aggregated over all members of a cluster (e.g., &ldquo;this cluster of drivers cancels orders with pickup distance \(\gt 5\)&nbsp;km during evening hours at rate \(r\)&rdquo;). An individual user's data only contributes to a cluster's aggregate, and individual trajectories are not included in the cluster-level profile description. (2)&nbsp;<em>Offline-only LLM inference.</em> Every LLM call happens in the offline knowledge-mining and profile-exploration stages. At serving time the online system performs only a deterministic cluster-assignment rule evaluation and a cache lookup for pre-computed embeddings (Section 3.4 of the paper); no user data is transmitted to any LLM API during real-time dispatching. (3)&nbsp;<em>Data locality via tool-mediated analysis.</em> Raw production logs never leave the platform's own infrastructure. During knowledge mining the LLM agent does not receive raw records; it invokes analytical tools that execute locally over the data and returns only their aggregated outputs, and profile generation is conditioned on cluster-pooled, re-sampled records and tool-computed statistics rather than raw user logs.</p>
-<p class="find"><b>Driver earning equity.</b> ProfiLLM does not introduce any new assignment rule. It augments the existing outcome predictor with cluster-level behavioral features, while the matching objective and allocation logic remain identical to the structured-feature baseline. To support fairness, the cluster-level design keeps the behavioral signal explicit and <em>auditable</em>: platform operators can inspect the textual PROFILE of each cluster (Section 3.3.2 of the paper) to verify that it does not encode undesirable biases, and can monitor per-cluster outcome distributions to detect and correct any disparities, a transparency advantage over opaque deep-feature interactions.</p>
-<p class="find"><b>Passenger service equity.</b> Infrequent users, including the 96% long-tail passengers in Figure 2 of the paper, are still assigned to behavioral clusters via \(a^*(u)\) and receive shared cluster-level profiles rather than being excluded from profiling (Section 3.4.2 of the paper); only genuine cold-start users with no usable history fall back to a default cluster. They therefore receive at least baseline matching quality, closing the cold-start gap that per-user profiling methods would face.</p>
-<p class="find"><b>Behavioral vs. protected attributes.</b> The clustering rules use only behavioral features (order patterns, cancellation history, temporal activity, spatial preferences) and never use protected attributes. Although behavioral features can in principle correlate with other attributes, the cluster-level design, in which each profile is expressed as inspectable text, supports systematic fairness auditing: outcome distributions such as wait time and allocation rates can be measured across clusters, and any cluster with statistically anomalous treatment can be flagged and reviewed.</p>
-</section>
-
 <section class="apx" id="prompts">
-  <h2><span class="tag">Q</span>Prompt Template<a class="permalink" href="#prompts" aria-label="Permalink to Appendix Q">#</a></h2>
-<p class="find">We present the abstracted prompt template in Table 8.</p>
-<p class="tablecap"><b>Table 8:</b> Prompt templates used for profile exploration. Placeholders denote injected inputs; the concrete feature legend and data tables are omitted.</p>
+  <h2><span class="tag">4</span>Prompts<a class="permalink" href="#prompts" aria-label="Permalink to Section 4">#</a></h2>
+<p class="find">Table&nbsp;A3 abstracts the four exploration prompts. Each cluster prompt contains (i) global benchmarks from \(\mathcal{K}\) (data period, platform funnel, temporal patterns, driver or passenger percentiles, archetype names, and population-level evidence flagged as weak), (ii) a feature legend restricted to the variables that the LOGIC rules may use, (iii) the cluster&rsquo;s summary statistics, and (iv) at most ten re-sampled recent records per outcome group (e.g., <code>IGNORED</code>, <code>COMPLETED</code>, <code>CANCELLED_AFTER_ACCEPT</code>); the instructions require the LOGIC block to implement exactly the rules stated in the PROFILE. Over all 994 cluster prompts of the granularity study (Section&nbsp;9), prompt length is 2,061&ndash;3,247 tokens.</p>
+<p class="tablecap" id="table-a3"><b>Table A3:</b> Prompt templates used for profile exploration. Placeholders denote injected inputs; the feature legend and data tables are omitted.</p>
 <div class="promptcard"><h4>Driver &mdash; Draft</h4>
 <p><b>[Role]</b> Expert analyst for ride-hailing driver behavior.</p>
 <p><b>[Task]</b> Summarize stable driver behavioral patterns and decision rules.</p>
@@ -702,13 +513,157 @@ The theoretical upper bound is \(K(1+T)=20\) calls per cluster; in deployment we
 </div>
 </section>
 
+<section class="apx" id="profile-examples">
+  <h2><span class="tag">5</span>Further Profile Examples<a class="permalink" href="#profile-examples" aria-label="Permalink to Section 5">#</a></h2>
+<p class="find">The three profiles below describe the same driver cluster (acceptance view, 461 drivers, City&nbsp;A) and were generated from the same prompt by three backbones. They illustrate the content of profiles and the variation across generators: all three find pickup effort and fare thresholds, but they differ in secondary rules (shift length, idle time, destination demand, surge).</p>
+<div class="profcards">
+  <div class="profcard"><h4>Gemini-3-Flash</h4>
+    <p><b>PROFILE.</b> The driver is a &ldquo;Strategic Marathoner&rdquo; who balances long shifts with strict efficiency filters to maintain profitability. They prioritize high-total-fare orders to minimize the frequency of pickups, but they strictly cap their workday at 12 hours. While they may &ldquo;grab&rdquo; low-value orders instinctively, they rarely complete them unless the passenger is essentially at their current location. Rules: (1) hard rejection of all orders once the daily <code>Hours</code> exceeds 12; (2) acceptance of orders with near-zero pickup time (<code>Pick_Min</code> &lt; 1.0) provided the <code>Price</code> is at least 10 BRL; (3) preference for high-value orders (<code>Price</code> &ge; 16) as long as the pickup time is under 7 minutes; (4) rejection of mid-range orders (<code>Price</code> 10&ndash;15) if the pickup time exceeds 3 minutes; (5) high likelihood of cancelling orders with a <code>Price</code> &lt; 10 BRL unless the pickup is extremely convenient.</p>
+    <p><b>LOGIC_ACCEPT.</b></p>
+    <code class="logic">(order['Hours'] &lt; 12) and ((order['Pick_Min'] &lt; 1.0 and order['Price'] &gt;= 10) or (order['Price'] &gt;= 16 and order['Pick_Min'] &lt; 7.0))</code>
+  </div>
+  <div class="profcard"><h4>Qwen3-Next-80B</h4>
+    <p><b>PROFILE.</b> The driver is a Selective Strategist who prioritizes high unit value, low pickup effort, and high-demand destinations over volume or long waits. They reject low-price-per-km trips, especially with long pickups, and cancel orders after prolonged idling even if previously accepted. Decision rules: (1) accept only if <code>Pick_Min</code> &le; 7; (2) reject if <code>Price_Per_KM</code> &lt; 2.0 unless <code>Surge</code> &gt; 1.3; (3) accept if <code>Dest_Heat</code> &ge; 3; (4) reject if <code>Idle</code> &gt; 120 minutes and <code>Surge</code> &le; 1.2; (5) accept if <code>Surge</code> &ge; 1.5 even if <code>Price_Per_KM</code> is moderate; (6) avoid trips with <code>Orig_Heat</code> = 1 and <code>Dest_Heat</code> = 1 if <code>Pick_Min</code> &gt; 5.</p>
+    <p><b>LOGIC_ACCEPT.</b></p>
+    <code class="logic">(order['Pick_Min'] &lt;= 7) and ((order['Price_Per_KM'] &gt;= 2.0) or (order['Surge'] &gt;= 1.5)) and (order['Dest_Heat'] &gt;= 3 or (order['Dest_Heat'] &gt;= 2 and order['Pick_Min'] &lt;= 3)) and not (order['Idle'] &gt; 120 and order['Surge'] &lt;= 1.2)</code>
+  </div>
+  <div class="profcard"><h4>DeepSeek-R1</h4>
+    <p><b>PROFILE.</b> This driver prioritizes operational efficiency and strategic positioning, avoiding excessive unpaid driving time and unprofitable destinations. They demonstrate &ldquo;Selective Long-Haul&rdquo; tendencies: rejecting excessively long trips (&gt;15 km) and extreme surge (&gt;2.0) while accepting orders with very short pickups (&le;1 km) or favorable destination potential when pickups are moderate (&le;2.5 km). Their criteria relax significantly during extended idle periods (&gt;180 min). Rules: (1) reject trips over 15 km; (2) reject surge above 2.0; (3) accept pickups of at most 1 km unconditionally; (4) accept any order after more than 180 idle minutes; (5) accept pickups of 1&ndash;2.5 km only if destination demand &ge; 2 and price per km &ge; 1.8 BRL.</p>
+    <p><b>LOGIC_ACCEPT.</b></p>
+    <code class="logic">order['Trip_KM'] &lt;= 15 and order['Surge'] &lt;= 2.0 and (order['Pick_KM'] &lt;= 1.0 or order['Idle'] &gt; 180 or (order['Pick_KM'] &lt;= 2.5 and order['Price_Per_KM'] &gt;= 1.8 and order['Dest_Heat'] &gt;= 2))</code>
+  </div>
+</div>
+</section>
+
+<section class="apx" id="lambda">
+  <h2><span class="tag">6</span>Sensitivity to the Blending Coefficient<a class="permalink" href="#lambda" aria-label="Permalink to Section 6">#</a></h2>
+<p class="find">In the deployed exploration, \(\lambda\) is chosen per candidate and task from \(\{0.01,\ldots,0.99\}\) (Sec.&nbsp;3.3.3 of the paper). To characterize its effect, we re-scored the GPT-OSS-120B exploration profiles of 494 cluster&ndash;task pairs across the six granularities (21 acceptance, 82 driver-cancellation, and 391 passenger-cancellation pairs) on the grid \(\{0,0.1,\ldots,1\}\). Figure&nbsp;A3 shows the mean fused AUC. Every pair improves over \(\lambda=0\) (base model only), and the mean curves peak at \(\lambda=0.9\) (acceptance: 0.766 &rarr; 0.791; passenger cancellation: 0.614 &rarr; 0.802) and \(\lambda=0.7\) (driver cancellation: 0.700 &rarr; 0.739), whereas pure LOGIC (\(\lambda=1\)) falls sharply. At the cluster level, the best grid value is 0.9 for 13 of 21 acceptance and 257 of 391 passenger-cancellation pairs; driver cancellation is bimodal (0.1 for 33 and 0.9 for 17 of 82 pairs). Note that these AUCs are computed within small cluster-level selection splits, where the base model&rsquo;s within-cluster discrimination can be weak; they are not comparable to the population-level AUCs of the paper.</p>
+<figure id="fig-a3"><img class="zoom" loading="lazy" decoding="async" src="static/images/lambda.png" alt="Line chart of mean LOGIC-fused AUC on the cluster selection splits versus the blending coefficient lambda for acceptance, driver cancellation, and passenger cancellation, with maxima marked by stars.">
+<figcaption><b>Figure A3:</b> Mean LOGIC-fused AUC on the cluster selection splits versus \(\lambda\) (stars: maxima). <a class="pdflink" href="static/pdfs/figs/lambda.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+</section>
+
+<section class="apx" id="implementation">
+  <h2><span class="tag">7</span>Implementation Details<a class="permalink" href="#implementation" aria-label="Permalink to Section 7">#</a></h2>
+<p class="find">For global knowledge mining, we use Gemini-3-Pro as the backbone LLM agent with a temperature of 0.3 for consistent tool invocation. In City&nbsp;A, the agent chose 38 driver and 58 passenger clusters, whose profiles are used in Table&nbsp;2 and in the online test; Section&nbsp;9 varies this number. For profile exploration, we generate \(K=5\) initial candidate profiles per cluster with GPT-OSS-120B and perform \(T=3\) refinement iterations (Algorithm&nbsp;2; prompts in Table&nbsp;A3). The margin threshold \(\gamma\) for constructing DPO preference pairs is set to 0.001 AUC improvement. We fine-tune Qwen3-8B via DPO on the collected preference pairs as the aligned profile generator. The text encoder \(\mathcal{E}\) for embedding profiles is the frozen bge-large-en-v1.5 model with output dimension \(d=1024\). All offline experiments are conducted on a cluster with 8 NVIDIA L20 GPUs.</p>
+</section>
+
+<section class="apx" id="simulator">
+  <h2><span class="tag">8</span>Dispatching Simulator<a class="permalink" href="#simulator" aria-label="Permalink to Section 8">#</a></h2>
+<p class="find">This section gives the protocol of the simulator behind Table&nbsp;1 and Figure&nbsp;4 of the paper.</p>
+<p class="find"><b>Environment.</b> The simulator replays one complete day outside the training window (December 8, 2025) per city from production logs, with all orders and drivers: every order arrives at its actual timestamp with its real origin, destination, dynamic price, and contextual features; driver positions and online periods are reconstructed from GPS trajectories and online-time logs. The geographic space uses the production grid system.</p>
+<p class="find"><b>Dispatching.</b> The simulator runs 2-second cycles. Candidate OD pairs are enumerated within a 1,500&nbsp;m pickup radius; pickup ETAs and distances come from the production routing service. Each method computes matching weights with its own predictor through the production weight formula (KM-Pickup uses the pickup distance only; ProfiLLM adds the bonus from \(\mathcal{R}\), Sec.&nbsp;3.4.2) and solves the assignment with a Lagrangian-relaxation variant of Kuhn&ndash;Munkres, as in production. Table&nbsp;1 of the paper reports the full day; the time-of-day results in Table&nbsp;A5 come from separate runs restricted to the respective windows.</p>
+<p class="find"><b>Outcomes.</b> For every assigned pair, the simulator samples driver acceptance and, given acceptance, driver and passenger cancellation (if both are drawn, one of them is counted, in proportion to their logged frequencies); an order completes only if the driver accepts and neither party cancels. A rejected or cancelled assignment returns the order to the queue, where it can be matched again until its 180-second patience limit expires, so every order ends either completed or unserved. A driver who has been idle for 300 seconds cruises, along a routed path, to a next grid predicted from its own logged trajectories. The outcome probabilities come from <em>one fixed model shared by all methods</em>, namely the profile-enhanced predictor, which is the same checkpoint that ProfiLLM uses for scoring.</p>
+<p class="find"><b>Limitations.</b> Table&nbsp;A4 lists the simplifications of the simulator, their effect on the gains of Table&nbsp;1, and how we account for them. Three properties make simulated gains optimistic: the outcome model is ProfiLLM&rsquo;s own predictor, whereas all other methods, including ProfiLLM-DPO, use different checkpoints; the reference KM-Pickup uses no outcome prediction, unlike the online control; and drivers do not react to the dispatch policy. Moreover, only ProfiLLM applies \(\mathcal{R}\), which the online test did not use; without it, ProfiLLM&rsquo;s CR drops by 2.2% (Figure&nbsp;4 of the paper). Each method runs once on one day, so small differences between methods are not interpreted. We therefore use the simulator, including Figures&nbsp;A4 and&nbsp;A5, only for the direction of effects.</p>
+<p class="tablecap" id="table-a4"><b>Table A4:</b> Simplifications of the simulator, their effect on the simulated gains of Table&nbsp;1, and how we account for them.</p>
+<div class="tw"><table class="dt txt" id="tsimbias">
+<thead><tr><th>Simplification</th><th>Effect on simulated gains</th><th>How we account for it</th></tr></thead>
+<tbody>
+<tr><td>Outcome model is ProfiLLM&rsquo;s own predictor</td><td>Favors ProfiLLM (closed loop), most visibly in CR</td><td>&Dagger; in Table&nbsp;1; simulator read for direction only</td></tr>
+<tr><td>Reference KM-Pickup uses no outcome prediction</td><td>Inflates the gains of all predictive methods</td><td>Margins over the strongest baselines reported (Secs.&nbsp;4.2 and 4.5)</td></tr>
+<tr><td>One day; one run per method in Table&nbsp;1</td><td>Run-to-run noise not quantified</td><td>Small differences between methods are not interpreted</td></tr>
+<tr><td>Re-queuing after a rejection or cancellation; fixed 180-s patience</td><td>Shift the CR level of all methods</td><td>Only relative comparisons used</td></tr>
+<tr><td>Drivers do not react to the policy; no multi-homing or pricing feedback</td><td>Long-run effects not captured; direction unknown</td><td>Online A/B test (Sec.&nbsp;4.5)</td></tr>
+<tr><td>Only ProfiLLM applies \(\mathcal{R}\) (not online)</td><td>Favors ProfiLLM (CR &minus;2.2% without \(\mathcal{R}\), Fig.&nbsp;4)</td><td>Stated in Secs.&nbsp;4.2 and 4.5</td></tr>
+<tr><td>Real orders, drivers, and trajectories; production KM solver and routing ETAs</td><td>None (realistic supply, demand, and pickup times)</td><td>&mdash;</td></tr>
+</tbody>
+</table></div>
+<p class="tablecap" id="table-a5"><b>Table A5:</b> Relative improvement (%) over pickup-distance-based KM matching by time period (Morning = 7:00&ndash;10:00, Noon = 11:00&ndash;14:00, Evening = 17:00&ndash;20:00), from separate simulator runs restricted to each window; Table&nbsp;1 of the paper reports the full day. Directional evidence only (shared outcome model; &Dagger;: ProfiLLM also applies \(\mathcal{R}\)). Bold burgundy = best per column and city; gray = negative.</p>
+<div class="tw"><table class="dt" id="ttod">
+<thead>
+<tr><th rowspan="2">Method</th><th colspan="2">Morning</th><th colspan="2">Noon</th><th colspan="2">Evening</th></tr>
+<tr><th>GMV</th><th>CR</th><th>GMV</th><th>CR</th><th>GMV</th><th>CR</th></tr>
+</thead>
+<tbody>
+<tr class="grp"><td colspan="7">City A</td></tr>
+<tr><td>TVal</td><td>+3.86</td><td>+2.44</td><td>+1.70</td><td>+1.08</td><td>+2.06</td><td>+1.41</td></tr>
+<tr><td>GRC</td><td>+4.18</td><td>+0.62</td><td>+3.01</td><td>+0.22</td><td class="neg">&minus;2.36</td><td class="neg">&minus;3.97</td></tr>
+<tr><td>Llama-3.3-70B</td><td>+0.84</td><td>+1.49</td><td>+1.02</td><td>+3.00</td><td>+2.21</td><td>+7.12</td></tr>
+<tr><td>Qwen3-Next-80B</td><td>+1.58</td><td>+1.54</td><td>+1.80</td><td>+3.89</td><td>+2.80</td><td>+6.29</td></tr>
+<tr><td>DeepSeek-R1</td><td>+1.40</td><td>+2.17</td><td>+1.35</td><td>+3.62</td><td>+2.60</td><td>+7.61</td></tr>
+<tr><td>Kimi-K2</td><td>+2.04</td><td>+1.78</td><td>+0.93</td><td>+3.34</td><td>+2.43</td><td>+8.15</td></tr>
+<tr><td>GPT-OSS-120B</td><td>+0.75</td><td>+1.65</td><td>+1.95</td><td>+4.62</td><td>+0.05</td><td>+6.96</td></tr>
+<tr><td>Gemini-3-Flash</td><td>+0.34</td><td>+1.01</td><td>+1.57</td><td>+4.20</td><td class="neg">&minus;0.26</td><td>+5.63</td></tr>
+<tr><td>Gemini-3.1-Pro</td><td>+3.96</td><td>+4.72</td><td>+1.74</td><td>+3.50</td><td>+1.62</td><td>+5.93</td></tr>
+<tr class="ours"><td>ProfiLLM-DPO</td><td>+4.97</td><td>+5.14</td><td>+3.01</td><td>+0.22</td><td>+2.82</td><td class="best">+9.94</td></tr>
+<tr class="ours"><td>ProfiLLM&Dagger;</td><td class="best">+5.02</td><td class="best">+5.67</td><td class="best">+3.20</td><td class="best">+4.98</td><td class="best">+3.19</td><td>+6.97</td></tr>
+<tr class="grp"><td colspan="7">City B</td></tr>
+<tr><td>TVal</td><td>+3.12</td><td>+1.98</td><td>+1.24</td><td>+0.76</td><td>+1.72</td><td>+1.05</td></tr>
+<tr><td>GRC</td><td>+3.54</td><td>+0.38</td><td>+2.47</td><td class="neg">&minus;0.15</td><td class="neg">&minus;1.82</td><td class="neg">&minus;3.25</td></tr>
+<tr><td>Llama-3.3-70B</td><td>+0.56</td><td>+1.12</td><td>+0.78</td><td>+2.54</td><td>+1.87</td><td>+6.38</td></tr>
+<tr><td>Qwen3-Next-80B</td><td>+1.24</td><td>+1.18</td><td>+1.45</td><td>+3.25</td><td>+2.42</td><td>+5.67</td></tr>
+<tr><td>DeepSeek-R1</td><td>+1.08</td><td>+1.82</td><td>+1.02</td><td>+3.08</td><td>+2.24</td><td>+6.83</td></tr>
+<tr><td>Kimi-K2</td><td>+1.72</td><td>+1.45</td><td>+0.68</td><td>+2.87</td><td>+2.08</td><td>+7.34</td></tr>
+<tr><td>GPT-OSS-120B</td><td>+0.48</td><td>+1.32</td><td>+1.62</td><td>+4.08</td><td class="neg">&minus;0.18</td><td>+6.24</td></tr>
+<tr><td>Gemini-3-Flash</td><td>+0.12</td><td>+0.78</td><td>+1.24</td><td>+3.65</td><td class="neg">&minus;0.48</td><td>+4.89</td></tr>
+<tr><td>Gemini-3.1-Pro</td><td>+3.42</td><td>+4.15</td><td>+1.38</td><td>+2.94</td><td>+1.28</td><td>+5.18</td></tr>
+<tr class="ours"><td>ProfiLLM-DPO</td><td>+4.42</td><td>+4.68</td><td>+2.64</td><td class="neg">&minus;0.08</td><td>+2.48</td><td class="best">+9.12</td></tr>
+<tr class="ours"><td>ProfiLLM&Dagger;</td><td class="best">+4.56</td><td class="best">+5.24</td><td class="best">+2.82</td><td class="best">+4.35</td><td class="best">+2.84</td><td>+6.28</td></tr>
+<tr class="grp"><td colspan="7">City C</td></tr>
+<tr><td>TVal</td><td>+4.24</td><td>+2.82</td><td>+1.92</td><td>+1.34</td><td>+2.38</td><td>+1.72</td></tr>
+<tr><td>GRC</td><td>+2.86</td><td>+0.54</td><td>+1.78</td><td>+0.08</td><td class="neg">&minus;1.54</td><td class="neg">&minus;2.83</td></tr>
+<tr><td>Llama-3.3-70B</td><td>+1.12</td><td>+1.78</td><td>+1.34</td><td>+3.42</td><td>+2.54</td><td>+7.56</td></tr>
+<tr><td>Qwen3-Next-80B</td><td>+1.82</td><td>+1.76</td><td>+2.04</td><td>+4.12</td><td>+3.12</td><td>+6.72</td></tr>
+<tr><td>DeepSeek-R1</td><td>+1.64</td><td>+2.48</td><td>+1.58</td><td>+3.94</td><td>+2.92</td><td>+7.98</td></tr>
+<tr><td>Kimi-K2</td><td>+2.36</td><td>+2.04</td><td>+1.12</td><td>+3.68</td><td>+2.72</td><td>+8.52</td></tr>
+<tr><td>GPT-OSS-120B</td><td>+0.98</td><td>+1.86</td><td>+2.18</td><td>+4.84</td><td>+0.32</td><td>+7.38</td></tr>
+<tr><td>Gemini-3-Flash</td><td>+0.58</td><td>+1.24</td><td>+1.82</td><td>+4.48</td><td>+0.08</td><td>+5.42</td></tr>
+<tr><td>Gemini-3.1-Pro</td><td>+4.28</td><td>+5.04</td><td>+1.98</td><td>+3.72</td><td>+1.92</td><td>+6.28</td></tr>
+<tr class="ours"><td>ProfiLLM-DPO</td><td>+5.24</td><td>+5.48</td><td>+3.38</td><td>+0.48</td><td>+3.14</td><td class="best">+10.32</td></tr>
+<tr class="ours"><td>ProfiLLM&Dagger;</td><td class="best">+5.38</td><td class="best">+5.92</td><td class="best">+3.54</td><td class="best">+5.24</td><td class="best">+3.48</td><td>+7.42</td></tr>
+</tbody>
+</table></div>
+<figure id="fig-a4"><img class="zoom" loading="lazy" decoding="async" src="static/images/wait_time.png" alt="Three-panel figure of passenger wait time in the simulator for City A: average wait time of matched orders, share of orders waiting more than 60 seconds, and the wait-time CDF.">
+<figcaption><b>Figure A4:</b> Passenger wait time in the simulator (City&nbsp;A): (a) average wait time of matched orders, (b) share of orders waiting more than 60&nbsp;s, and (c) wait-time CDF. Directional evidence only (shared outcome model). <a class="pdflink" href="static/pdfs/figs/wait_time.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+<figure id="fig-a5"><img class="zoom" loading="lazy" decoding="async" src="static/images/hourly.png" alt="Hourly GMV and completion rate in the simulator, with shaded peak windows.">
+<figcaption><b>Figure A5:</b> Hourly GMV and CR in the simulator; shaded regions mark the peak windows. Directional evidence only (shared outcome model). <a class="pdflink" href="static/pdfs/figs/hourly.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+</section>
+
+<section class="apx" id="granularity">
+  <h2><span class="tag">9</span>Profile Granularity<a class="permalink" href="#granularity" aria-label="Permalink to Section 9">#</a></h2>
+<p class="find">We fix the number of clusters on City&nbsp;A and vary it one side at a time: 8 to 256 clusters per driver view (acceptance and cancellation are partitioned separately) with 64 passenger clusters, and 8 to 256 passenger clusters with 32 clusters per driver view. Each of the 11 configurations is evaluated with nine profile generators (the seven baseline backbones of Table&nbsp;2, ProfiLLM, and ProfiLLM-DPO; 99 runs), with the predictor retrained on the cluster embeddings, so absolute AUCs differ from those of Table&nbsp;2. Figure&nbsp;A6 plots the AUC of ProfiLLM-DPO and ProfiLLM per configuration. Beyond 16 clusters per side, ProfiLLM-DPO&rsquo;s AUC varies by only 0.21&ndash;0.32 points per task, and the standard deviation across the nine generators is at most 0.29 points per configuration. Cost, in contrast, grows linearly with the number of clusters: from 47 to 360 profiles and from 0.14M to 1.1M prompt tokens per configuration (994 distinct cluster profiles in total; Section&nbsp;10 gives their generation cost per backbone). Finer clusters are more homogeneous, with about 54 drivers or 1,300 passengers per cluster at 256 clusters, but they do not raise AUC, and one profile per user hurts long-tail passengers (Sec.&nbsp;4.4 of the paper). The agent&rsquo;s choice of 38 driver and 58 passenger clusters (Sec.&nbsp;4.1.4 of the paper) thus lies on this plateau. Heterogeneous users within a cluster are partly served by ProfiLLM&rsquo;s five candidates per cluster with per-user selection (Sec.&nbsp;3.4.1 of the paper).</p>
+<figure id="fig-a6"><img class="zoom" loading="lazy" decoding="async" src="static/images/cluster_sens.png" alt="Two-panel line chart of prediction AUC per task versus the number of clusters, for ProfiLLM-DPO and ProfiLLM; left varies driver clusters, right varies passenger clusters.">
+<figcaption><b>Figure A6:</b> Profile granularity on City&nbsp;A: AUC (%) of ProfiLLM-DPO (solid) and ProfiLLM (dashed, &ldquo;Explore&rdquo;) per task. Left: 8&ndash;256 clusters per driver view with 64 passenger clusters; right: 8&ndash;256 passenger clusters with 32 clusters per driver view. The predictor is retrained with the cluster embeddings, so absolute AUCs differ from Table&nbsp;2. <a class="pdflink" href="static/pdfs/figs/cluster_sens.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+</section>
+
+<section class="apx" id="cost">
+  <h2><span class="tag">10</span>Cost and Complexity<a class="permalink" href="#cost" aria-label="Permalink to Section 10">#</a></h2>
+<span id="offline-cost"></span>
+<p class="tablecap" id="table-a6"><b>Table A6:</b> One initial ProfiLLM run on the 44.3M City&nbsp;A records (96 clusters).</p>
+<div class="tw"><table class="dt" id="tcost">
+<thead><tr><th>Stage</th><th style="text-align:left">Grows with</th><th>Time</th><th>Calls</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td style="white-space:normal">Ingestion into DuckDB with indexes (laptop)</td><td style="text-align:left">records</td><td>&approx;20&nbsp;min</td><td>0</td><td>&ndash;</td></tr>
+<tr><td style="white-space:normal">Knowledge mining (Gemini-3-Pro): 7&ndash;11 turns, 27&ndash;31 tool calls, final report</td><td style="text-align:left">turns; tools: records</td><td>3.5&ndash;4.5&nbsp;min</td><td>8&ndash;12</td><td>$7.50</td></tr>
+<tr><td style="white-space:normal">User assignment: statistics of all users, nearest of 96 centroids</td><td style="text-align:left">records</td><td>20&ndash;26&nbsp;s</td><td>0</td><td>&ndash;</td></tr>
+<tr><td style="white-space:normal">Profile exploration (ProfiLLM): &le;15 calls per profiled cluster, LOGIC-rule evaluation</td><td style="text-align:left">clusters; rules: records</td><td>&approx;4&nbsp;h</td><td>&le;1,440</td><td>$45.00</td></tr>
+<tr><td style="white-space:normal">Profile embedding (bge-large)</td><td style="text-align:left">clusters</td><td>seconds</td><td>0</td><td>&ndash;</td></tr>
+<tr><td style="white-space:normal">Predictor training (fusion layer, one L20; 11 configurations of Figure&nbsp;A6)</td><td style="text-align:left">records</td><td>80&ndash;89&nbsp;min</td><td>0</td><td>$2.00&ndash;2.23</td></tr>
+<tr class="ours"><td><b>Initial run, total</b></td><td></td><td><b>&approx;5.8&nbsp;h</b></td><td><b>&le;1,452</b></td><td><b>&approx;$55</b></td></tr>
+</tbody>
+</table>
+<p class="tnote">The exploration row, the mining cost, and the embedding time are estimates of the submission; the other entries are measured, some on part of the data and scaled linearly to 44.3M records. LLM calls are priced as Gemini-3-Pro API calls at $1.25/$10 per million input/output tokens, and GPU time at $1.50 per hour.</p></div>
+<p class="find"><b>End-to-end cost (City&nbsp;A).</b> Table&nbsp;A6 assembles one initial run on the 44.3M records of the 38-day training window. Stages logged on part of the data are scaled linearly with the number of records: the three mining sessions ran on the 36.8M records of November 2025 (tool execution 45&ndash;57&nbsp;s; user statistics and centroids 8&ndash;11&nbsp;s per role), and ingestion was timed on one day (0.97M records in 25.7&nbsp;s). Apart from training, reading the 44.3M records takes about 21 minutes, mostly one-time ingestion, and the number of LLM calls grows with the number of clusters, not of records. Our logs do not record the token counts of exploration, so its cost is the submission&rsquo;s estimate. The estimate is conservative: it prices exploration as Gemini-3-Pro API calls, whereas exploration ran on the self-hosted GPT-OSS-120B ($0.5/$1.0 per million tokens, see below), and it assumed about 20 mining calls instead of the measured 8&ndash;12. A DPO refresh (one call per profiled cluster and retraining of the fusion layer) takes about 1.8 hours, of which retraining 82&ndash;89 minutes. The submission estimated it at $5.13 by pricing the 96 calls as Gemini-3-Pro API calls ($3.00), as in Table&nbsp;A6, 10.6&times; less than the $54.63 of an initial run; with the token counts measured for ProfiLLM-DPO below (on average 2,855 input and 3,397 output tokens per call) at the self-hosting price, the calls cost $0.46 and the refresh about $2.6, mostly retraining. Neither includes the one-time DPO fine-tuning; profiles were not refreshed during the online test.</p>
+<p class="find"><b>Profile generation and training (measured).</b> Cluster prompts have 2,061&ndash;3,247 tokens; generating all 994 cluster profiles of the granularity study (Section&nbsp;9) costs $0.50 (Gemini-3-Flash), $0.65 (Llama-3.3-70B), $1.02 (Qwen3-Next-80B), $2.05 (GPT-OSS-120B), $2.90 (Kimi-K2), $8.74 (Gemini-3.1-Pro), and $21.11 (DeepSeek-R1) at April-2026 list prices, and $4.80 for ProfiLLM-DPO at a self-hosting estimate ($0.5/$1.0 per million input/output tokens). Retraining the predictor with profile embeddings took 69&ndash;154 minutes per configuration on one NVIDIA L20 (99 runs).</p>
+<p class="find"><b>Cost&ndash;quality trade-off.</b> Figure&nbsp;A7 plots the driver-acceptance AUC of each generator, averaged over the 11 cluster configurations, against its offline cost. ProfiLLM-DPO lies on the Pareto frontier and dominates five of the seven baseline LLMs. This reflects cost rather than quality: ProfiLLM-DPO is plotted at its per-refresh cost, which reuses the mined knowledge, whereas the other points include knowledge mining, and all AUCs lie within 0.0024.</p>
+<figure id="fig-a7"><img class="zoom" loading="lazy" decoding="async" src="static/images/pareto.png" alt="Scatter plot of driver-acceptance AUC versus offline cost for the profile generators on City A.">
+<figcaption><b>Figure A7:</b> Cost&ndash;quality trade-off on City&nbsp;A: driver-acceptance AUC averaged over 11 cluster configurations; ProfiLLM-DPO at its per-refresh cost (knowledge mining reused), the other points including knowledge mining. <a class="pdflink" href="static/pdfs/figs/pareto.pdf" target="_blank" rel="noopener">[vector PDF]</a></figcaption></figure>
+<p class="find" id="complexity"><b>Complexity.</b> With \(|\mathcal{H}|\) history records, \(|\mathcal{T}|\) tools, \(|\mathcal{A}|\) clusters, and \(|\mathcal{C}|\) candidate pairs per cycle: tool execution is \(O(|\mathcal{T}|\cdot|\mathcal{H}|)\) with a number of LLM turns independent of \(|\mathcal{H}|\); cluster assignment is \(O(|\mathcal{A}|\cdot|\mathcal{H}|)\) and embarrassingly parallel; exploration issues \(O(15\,|\mathcal{A}|)\) LLM calls and evaluates LOGIC rules in \(O(|\mathcal{H}|)\) per candidate; a DPO refresh issues \(|\mathcal{A}|\) calls. Online, each OD pair needs two \(O(1)\) lookups, of the user&rsquo;s cluster (under 0.01&nbsp;ms) and of its cached embedding (under 0.001&nbsp;ms), and one forward pass of the fusion layer over at most five tokens, in addition to the unchanged predictor and KM solver; no LLM is called online, which keeps dispatching well within DiDi&rsquo;s 200&nbsp;ms budget.</p>
+<p class="find"><b>Storage.</b> For the 96 clusters used in City&nbsp;A, the embedding table holds at most five candidate embeddings of 1,024 floats per profiled cluster (at most 2.0&nbsp;MB; 0.39&nbsp;MB for single-pass generators), the user-to-cluster table holds 348,464 four-byte entries (about 1.4&nbsp;MB), and the profile texts take well under 1&nbsp;MB. With 96 clusters, cluster-level profiling needs about 3,600&times; fewer profiles than per-user profiling. All 348,464 City&nbsp;A users are assigned to one of the 96 clusters, but users of clusters without a profile keep the default embedding \(\mathbf{e}_0\) and hence receive exactly the production prediction (Sec.&nbsp;3.3.1).</p>
+</section>
+
+<section class="apx" id="privacy-fairness">
+  <h2><span class="tag">11</span>Privacy and Fairness Considerations<a class="permalink" href="#privacy-fairness" aria-label="Permalink to Section 11">#</a></h2>
+<p class="find"><b>Privacy by design.</b> (1)&nbsp;<em>Cluster-level abstraction</em>: the LLM sees cluster-pooled, re-sampled records and cluster statistics, never one identifiable user&rsquo;s trajectory in isolation, and profiles contain no individual trajectories. (2)&nbsp;<em>Offline-only LLM inference</em>: no user data reaches an LLM during dispatching. (3)&nbsp;<em>Data locality</em>: during mining, raw logs stay in the platform&rsquo;s infrastructure; the agent sees only aggregated tool outputs. These measures matter because some offline LLM calls go to third-party APIs and rules such as Brazil&rsquo;s LGPD require data minimization.</p>
+<p class="find"><b>Driver and passenger equity.</b> As deployed, ProfiLLM only augments the outcome predictor; the matching objective and allocation logic are unchanged (\(\mathcal{R}\) was not used online). Profiles are short, inspectable texts per cluster that operators can audit, together with per-cluster outcome distributions (wait times, allocation rates). Users without a profile receive exactly the production prediction. Clustering uses only behavioral features, never protected attributes; since these can correlate with other attributes, per-cluster auditing remains necessary.</p>
+</section>
+
   </main>
 </div>
 
 <footer>
   <div class="wrap">
-    <p>Online appendix for the VLDB 2027 (Scalable Data Science) submission &middot; <a href="index.html">project page</a> &middot; <a href="files/ProfiLLM_appendix.pdf">typeset PDF</a>.<br>
-    Last updated June 2026 &middot; Page content &copy; the authors.</p>
+    <p>Online appendix of the revised PVLDB (Scalable Data Science) submission #1392 &middot; <a href="index.html">project page</a> &middot; <a href="files/ProfiLLM_appendix.pdf">typeset PDF</a>.<br>
+    Last updated November 2026 &middot; Page content &copy; the authors.</p>
   </div>
 </footer>
 
